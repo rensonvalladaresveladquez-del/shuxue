@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>真分数和假分数 | 趣味拖拽分类游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #fef5e7;
+            font-family: 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI Emoji', cursive, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .course-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 252, 240, 0.92);
+            border-radius: 64px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.05), 0 5px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .flex-lesson {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* 左侧知识点区域 */
+        .knowledge-panel {
+            flex: 1.2;
+            min-width: 260px;
+            background: #fffef5;
+            margin: 20px 12px 20px 20px;
+            border-radius: 48px;
+            padding: 24px 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid #ffe0b5;
+        }
+
+        /* 右侧游戏区域 */
+        .game-panel {
+            flex: 2;
+            min-width: 300px;
+            background: #fffcf0;
+            margin: 20px 20px 20px 12px;
+            border-radius: 48px;
+            padding: 22px 20px;
+            border: 1px solid #ffdead;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 知识点样式 */
+        .know-title {
+            background: #ffd89a;
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 60px;
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #b45f1b;
+            margin-bottom: 20px;
+        }
+
+        .intro-card {
+            background: #fff1e0;
+            border-radius: 32px;
+            padding: 18px;
+            margin: 18px 0;
+        }
+
+        .definition {
+            background: #fff7e8;
+            border-radius: 28px;
+            padding: 14px;
+            margin: 16px 0;
+        }
+
+        .example {
+            margin-top: 10px;
+            padding-left: 16px;
+            color: #a7581c;
+        }
+
+        .compare-box {
+            background: #ffe8d4;
+            border-radius: 28px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        /* 右侧游戏头部 */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 2px dashed #ffcd94;
+            padding-bottom: 12px;
+        }
+
+        .game-title {
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #cc7b2c;
+            background: #fff0df;
+            padding: 0 18px;
+            border-radius: 50px;
+        }
+
+        .score-board {
+            background: #feebcc;
+            border-radius: 40px;
+            padding: 6px 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #bc6f25;
+        }
+
+        .reset-btn {
+            background: #f7bc6c;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 8px 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: #4f2c0b;
+            font-family: inherit;
+            transition: 0.1s;
+            box-shadow: 0 3px 0 #bd7a3a;
+        }
+
+        .reset-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #bd7a3a;
+        }
+
+        /* 分类篮子区域 */
+        .baskets-area {
+            margin-bottom: 32px;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            margin: 10px 0 16px 0;
+            color: #b45f1b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .baskets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .basket {
+            background: #fff9ef;
+            border-radius: 48px;
+            padding: 20px 12px;
+            text-align: center;
+            border: 2px solid #ffe2bf;
+            box-shadow: 0 8px 0 #f2d5a8;
+            transition: 0.1s;
+            cursor: default;
+        }
+
+        .basket h3 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            color: #c56a1a;
+        }
+
+        .basket p {
+            background: #ffe1bd;
+            border-radius: 60px;
+            padding: 6px;
+            font-size: 0.85rem;
+            color: #aa6d2c;
+        }
+
+        /* 分数卡片区域 */
+        .cards-area {
+            margin-top: 20px;
+        }
+
+        .cards-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            justify-content: center;
+            align-items: center;
+            min-height: 180px;
+            background: #fff8ec;
+            border-radius: 56px;
+            padding: 20px;
+        }
+
+        .drag-card {
+            background: #ffe3c2;
+            width: 110px;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            border-radius: 60px;
+            cursor: grab;
+            transition: 0.05s linear;
+            box-shadow: 0 10px 0 #dba451;
+            color: #cf7a2c;
+            touch-action: none;
+            will-change: transform;
+            font-family: monospace;
+        }
+
+        .drag-card:active {
+            cursor: grabbing;
+        }
+
+        .drag-card.dragging-origin {
+            opacity: 0.3;
+        }
+
+        /* 拖拽克隆样式 */
+        .dragging-clone {
+            position: fixed;
+            z-index: 9999;
+            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2));
+            transform: scale(1.05);
+            opacity: 0.85;
+            pointer-events: none;
+            background: #ffe3c2;
+            width: 110px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            border-radius: 60px;
+            padding: 20px 0;
+            color: #cf7a2c;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            font-family: monospace;
+        }
+
+        /* 提示消息 */
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffb347;
+            color: #4d2a0e;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeOut 1s ease forwards;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+                visibility: hidden;
+            }
+        }
+
+        .win-message {
+            text-align: center;
+            background: #fbd598;
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #a7490a;
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            80% {
+                transform: scale(1.02);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 15px;
+            color: #ca9a6b;
+        }
+
+        @media (max-width: 780px) {
+            body {
+                padding: 12px;
+            }
+
+            .flex-lesson {
+                flex-direction: column;
+            }
+
+            .knowledge-panel,
+            .game-panel {
+                margin: 12px;
+            }
+
+            .drag-card {
+                width: 90px;
+                font-size: 1.6rem;
+                padding: 14px 0;
+            }
+
+            .dragging-clone {
+                width: 90px;
+                font-size: 1.6rem;
+                padding: 14px 0;
+            }
+
+            .baskets-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+
+            .toast-msg {
+                white-space: normal;
+                width: 80%;
+                text-align: center;
+                font-size: 1rem;
+            }
+        }
+
+        .instruction {
+            font-size: 0.85rem;
+            text-align: center;
+            background: #ffefdb;
+            border-radius: 40px;
+            padding: 8px;
+            margin-top: 20px;
+            color: #bd762e;
+        }
+    </style>
+</head>
+<body>
+<div class="course-wrapper">
+    <div class="flex-lesson">
+        <!-- 左侧知识点区：真分数与假分数 -->
+        <div class="knowledge-panel">
+            <div class="know-title">📚 真分数 · 假分数</div>
+            <div class="intro-card">
+                <div class="definition">
+                    <strong>🍭 真分数</strong>
+                    <p>分子 <strong>小于</strong> 分母，分数值 <strong>小于 1</strong>。</p>
+                    <div class="example">🌰 例如：½、¾、⅚ …… 都小于1。</div>
+                </div>
+                <div class="definition">
+                    <strong>🍩 假分数</strong>
+                    <p>分子 <strong>大于或等于</strong> 分母，分数值 <strong>大于或等于 1</strong>。</p>
+                    <div class="example">🌰 例如：³⁄₂、⁵⁄₄、⁷⁄₇ …… 等于1或大于1。</div>
+                </div>
+                <div class="compare-box">
+                    💡 <strong>小窍门：</strong> 看分子和分母的大小就能快速判断！<br>
+                    分子 < 分母 → 真分数 &nbsp;&nbsp;|&nbsp;&nbsp; 分子 ≥ 分母 → 假分数
+                </div>
+                <div class="compare-box">
+                    🎯 <strong>游戏任务：</strong> 把下面的分数卡片拖到正确的篮子里！<br>
+                    真分数篮子 🧺 &nbsp; 假分数篮子 🧺
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧游戏区：拖拽分类 -->
+        <div class="game-panel">
+            <div class="game-header">
+                <div class="game-title">🎯 分数分类大挑战</div>
+                <div class="score-board">配对成功: <span id="matchedCount">0</span> / <span id="totalCount">0</span></div>
+                <button class="reset-btn" id="resetBtn">🔄 新的一局</button>
+            </div>
+
+            <!-- 两个篮子 -->
+            <div class="baskets-area">
+                <div class="subtitle">🧺 把分数拖到正确的篮子里</div>
+                <div class="baskets-grid" id="basketsGrid">
+                    <div class="basket" data-type="proper">
+                        <h3>🍰 真分数</h3>
+                        <p>分子 < 分母 (值<1)</p>
+                    </div>
+                    <div class="basket" data-type="improper">
+                        <h3>🥧 假分数</h3>
+                        <p>分子 ≥ 分母 (值≥1)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 可拖拽分数卡片区 -->
+            <div class="cards-area">
+                <div class="subtitle">🔢 拖拽下面的分数卡片</div>
+                <div class="cards-grid" id="cardsGrid"></div>
+            </div>
+            <div class="instruction">
+                🖱️ 按住分数卡片，拖到上方正确的篮子里松手！配对正确卡片会消失并加分。每个分数只能配对一次。
+            </div>
+        </div>
+    </div>
+    <footer>🐣 判断小诀窍：比较分子和分母，分子小是真分数，分子大或等是假分数！</footer>
+</div>
+
+<script>
+    // ---------- 游戏数据 ----------
+    // 分数列表：每个分数对象包含分数文本和类型（proper 真分数 / improper 假分数）
+    const fractionsData = [
+        { text: "1/2", numerator: 1, denominator: 2, type: "proper" },
+        { text: "3/4", numerator: 3, denominator: 4, type: "proper" },
+        { text: "5/6", numerator: 5, denominator: 6, type: "proper" },
+        { text: "2/3", numerator: 2, denominator: 3, type: "proper" },
+        { text: "4/5", numerator: 4, denominator: 5, type: "proper" },
+        { text: "3/2", numerator: 3, denominator: 2, type: "improper" },
+        { text: "5/4", numerator: 5, denominator: 4, type: "improper" },
+        { text: "7/5", numerator: 7, denominator: 5, type: "improper" },
+        { text: "9/8", numerator: 9, denominator: 8, type: "improper" },
+        { text: "4/4", numerator: 4, denominator: 4, type: "improper" },
+        { text: "7/3", numerator: 7, denominator: 3, type: "improper" },
+        { text: "2/1", numerator: 2, denominator: 1, type: "improper" }
+    ];
+
+    // 当前使用的分数列表（随机抽取6~8个，保证真/假分数都有，并打乱）
+    let currentFractions = [];
+    let activeCards = [];       // 存储未配对的分数卡片 { element, fractionData }
+    let matchedCount = 0;
+    let totalPairs = 0;
+
+    // DOM 元素
+    const cardsGrid = document.getElementById('cardsGrid');
+    const matchedSpan = document.getElementById('matchedCount');
+    const totalSpan = document.getElementById('totalCount');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // 拖拽系统变量
+    let dragActive = false;
+    let dragSourceElement = null;
+    let dragSourceFractionData = null;
+    let dragClone = null;
+    let onMoveHandler = null;
+    let onUpHandler = null;
+
+    // 随机抽取不重复的分数，确保真分数和假分数都有，总数6~8个
+    function getRandomFractions() {
+        const properFractions = fractionsData.filter(f => f.type === "proper");
+        const improperFractions = fractionsData.filter(f => f.type === "improper");
+        // 随机选3~4个真分数，3~4个假分数
+        const properCount = Math.floor(Math.random() * 2) + 3; // 3 或 4
+        const improperCount = Math.floor(Math.random() * 2) + 3; // 3 或 4
+        const selectedProper = [];
+        const shuffledProper = [...properFractions];
+        for (let i = shuffledProper.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledProper[i], shuffledProper[j]] = [shuffledProper[j], shuffledProper[i]];
+        }
+        for (let i = 0; i < Math.min(properCount, shuffledProper.length); i++) {
+            selectedProper.push(shuffledProper[i]);
+        }
+        const selectedImproper = [];
+        const shuffledImproper = [...improperFractions];
+        for (let i = shuffledImproper.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledImproper[i], shuffledImproper[j]] = [shuffledImproper[j], shuffledImproper[i]];
+        }
+        for (let i = 0; i < Math.min(improperCount, shuffledImproper.length); i++) {
+            selectedImproper.push(shuffledImproper[i]);
+        }
+        let combined = [...selectedProper, ...selectedImproper];
+        // 打乱顺序
+        for (let i = combined.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [combined[i], combined[j]] = [combined[j], combined[i]];
+        }
+        return combined;
+    }
+
+    // 更新得分显示
+    function updateScoreUI() {
+        matchedSpan.innerText = matchedCount;
+        totalSpan.innerText = totalPairs;
+        if (matchedCount === totalPairs && totalPairs > 0) {
+            let winDiv = document.querySelector('.win-message-game');
+            if (!winDiv) {
+                winDiv = document.createElement('div');
+                winDiv.className = 'win-message win-message-game';
+                winDiv.innerText = '🎉 太棒了！所有分数都正确分类！ 🎉';
+                document.querySelector('.game-panel').appendChild(winDiv);
+                setTimeout(() => {
+                    if (winDiv && winDiv.parentNode) winDiv.remove();
+                }, 3500);
+            }
+        } else {
+            let winDiv = document.querySelector('.win-message-game');
+            if (winDiv) winDiv.remove();
+        }
+    }
+
+    // 提示消息
+    function showTip(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 1300);
+    }
+
+    // 配对成功：移除卡片，增加分数
+    function pairSuccess(cardElement) {
+        const cardIndex = activeCards.findIndex(c => c.element === cardElement);
+        if (cardIndex !== -1) {
+            activeCards[cardIndex].element.remove();
+            activeCards.splice(cardIndex, 1);
+            matchedCount++;
+            updateScoreUI();
+            return true;
+        }
+        return false;
+    }
+
+    // 尝试匹配篮子
+    function tryMatchWithBasket(basketElement, fractionData, dragCardElement) {
+        if (!basketElement) return false;
+        const targetType = basketElement.getAttribute('data-type');
+        if (!targetType) return false;
+        const fractionType = fractionData.type;
+        if (targetType === fractionType) {
+            // 配对正确
+            pairSuccess(dragCardElement);
+            let typeName = (fractionType === 'proper') ? '真分数' : '假分数';
+            showTip(`✅ 正确！ ${fractionData.text} 是 ${typeName}！`, false);
+            return true;
+        } else {
+            let correctType = (fractionType === 'proper') ? '真分数' : '假分数';
+            showTip(`❌ 不对哦！ ${fractionData.text} 是 ${correctType}，再观察一下分子和分母的大小～`);
+            return false;
+        }
+    }
+
+    // ---------- 自定义拖拽实现 (鼠标+触摸) ----------
+    function onDragStart(e, dragElement, fractionData) {
+        if (dragActive) return;
+        e.preventDefault();
+        dragActive = true;
+        dragSourceElement = dragElement;
+        dragSourceFractionData = fractionData;
+
+        dragSourceElement.classList.add('dragging-origin');
+
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        // 克隆体
+        dragClone = document.createElement('div');
+        dragClone.className = 'dragging-clone';
+        dragClone.innerText = fractionData.text;
+        dragClone.style.left = clientX - 55 + 'px';
+        dragClone.style.top = clientY - 40 + 'px';
+        document.body.appendChild(dragClone);
+
+        onMoveHandler = onGlobalMove;
+        onUpHandler = onGlobalUp;
+        window.addEventListener('mousemove', onMoveHandler);
+        window.addEventListener('mouseup', onUpHandler);
+        window.addEventListener('touchmove', onMoveHandler, { passive: false });
+        window.addEventListener('touchend', onUpHandler);
+        window.addEventListener('touchcancel', onUpHandler);
+    }
+
+    function onGlobalMove(e) {
+        if (!dragActive || !dragClone) return;
+        e.preventDefault();
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        dragClone.style.left = clientX - 55 + 'px';
+        dragClone.style.top = clientY - 40 + 'px';
+    }
+
+    function onGlobalUp(e) {
+        if (!dragActive) return;
+
+        let endX, endY;
+        if (e.changedTouches) {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+        } else {
+            endX = e.clientX;
+            endY = e.clientY;
+        }
+
+        // 隐藏克隆体检测下方元素
+        if (dragClone) dragClone.style.display = 'none';
+        const elementsUnderCursor = document.elementsFromPoint(endX, endY);
+        if (dragClone) dragClone.style.display = '';
+
+        let targetBasket = null;
+        for (let el of elementsUnderCursor) {
+            if (el.classList && el.classList.contains('basket')) {
+                targetBasket = el;
+                break;
+            }
+        }
+
+        if (targetBasket && dragSourceElement && dragSourceFractionData) {
+            tryMatchWithBasket(targetBasket, dragSourceFractionData, dragSourceElement);
+        } else {
+            if (dragSourceElement) showTip('✨ 要把分数卡片拖到上面的篮子里哟！');
+        }
+
+        // 清理克隆体
+        if (dragClone) dragClone.remove();
+        dragClone = null;
+        if (dragSourceElement) {
+            dragSourceElement.classList.remove('dragging-origin');
+        }
+
+        // 解绑事件
+        window.removeEventListener('mousemove', onMoveHandler);
+        window.removeEventListener('mouseup', onUpHandler);
+        window.removeEventListener('touchmove', onMoveHandler);
+        window.removeEventListener('touchend', onUpHandler);
+        window.removeEventListener('touchcancel', onUpHandler);
+
+        dragActive = false;
+        dragSourceElement = null;
+        dragSourceFractionData = null;
+    }
+
+    // 为每个分数卡片绑定拖拽启动事件
+    function attachDragToCard(cardElement, fractionData) {
+        cardElement.removeEventListener('mousedown', onMouseDown);
+        cardElement.removeEventListener('touchstart', onTouchStart);
+        cardElement.addEventListener('mousedown', onMouseDown);
+        cardElement.addEventListener('touchstart', onTouchStart, { passive: false });
+
+        function onMouseDown(e) {
+            e.preventDefault();
+            onDragStart(e, cardElement, fractionData);
+        }
+        function onTouchStart(e) {
+            e.preventDefault();
+            onDragStart(e, cardElement, fractionData);
+        }
+        cardElement._dragMouse = onMouseDown;
+        cardElement._dragTouch = onTouchStart;
+    }
+
+    // 构建分数卡片（打乱顺序）
+    function buildFractionCards() {
+        cardsGrid.innerHTML = '';
+        activeCards = [];
+        // 打乱当前分数列表
+        const shuffled = [...currentFractions];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        shuffled.forEach(fraction => {
+            const card = document.createElement('div');
+            card.className = 'drag-card';
+            card.innerText = fraction.text;
+            card.setAttribute('data-type', fraction.type);
+            cardsGrid.appendChild(card);
+            activeCards.push({ element: card, fractionData: fraction });
+            attachDragToCard(card, fraction);
+        });
+        matchedCount = 0;
+        totalPairs = currentFractions.length;
+        updateScoreUI();
+    }
+
+    // 重置游戏（新的一批分数）
+    function resetGame() {
+        // 清除任何进行中的拖拽
+        if (dragActive && dragClone) {
+            dragClone.remove();
+            dragClone = null;
+            if (dragSourceElement) dragSourceElement.classList.remove('dragging-origin');
+            dragActive = false;
+        }
+        currentFractions = getRandomFractions();
+        buildFractionCards();
+        // 移除胜利消息
+        const winDiv = document.querySelector('.win-message-game');
+        if (winDiv) winDiv.remove();
+    }
+
+    // 初始化（第一次加载）
+    function init() {
+        currentFractions = getRandomFractions();
+        buildFractionCards();
+    }
+
+    resetBtn.addEventListener('click', resetGame);
+    init();
+</script>
+</body>
+</html>

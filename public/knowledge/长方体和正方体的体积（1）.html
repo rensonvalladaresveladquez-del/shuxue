@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>长方体和正方体的体积(1) | 趣味拖拽配对游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #fef7ec;
+            font-family: 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI Emoji', cursive, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .course-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 252, 240, 0.92);
+            border-radius: 64px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.05), 0 5px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .flex-lesson {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* 左侧知识点区域 */
+        .knowledge-panel {
+            flex: 1.2;
+            min-width: 260px;
+            background: #fffef5;
+            margin: 20px 12px 20px 20px;
+            border-radius: 48px;
+            padding: 24px 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid #ffe0b5;
+        }
+
+        /* 右侧游戏区域 */
+        .game-panel {
+            flex: 2;
+            min-width: 300px;
+            background: #fffcf0;
+            margin: 20px 20px 20px 12px;
+            border-radius: 48px;
+            padding: 22px 20px;
+            border: 1px solid #ffdead;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 知识点样式 */
+        .know-title {
+            background: #ffd89a;
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 60px;
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #b45f1b;
+            margin-bottom: 20px;
+        }
+
+        .formula-card {
+            background: #fff1e0;
+            border-radius: 32px;
+            padding: 18px;
+            margin: 18px 0;
+            text-align: center;
+        }
+
+        .formula {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e67e22;
+            margin: 12px 0;
+        }
+
+        .example-box {
+            background: #fff7e8;
+            border-radius: 28px;
+            padding: 14px;
+            margin: 16px 0;
+        }
+
+        .step {
+            margin-top: 8px;
+            color: #a7581c;
+        }
+
+        .unit-note {
+            background: #ffe8d4;
+            border-radius: 28px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        /* 右侧游戏头部 */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 2px dashed #ffcd94;
+            padding-bottom: 12px;
+        }
+
+        .game-title {
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #cc7b2c;
+            background: #fff0df;
+            padding: 0 18px;
+            border-radius: 50px;
+        }
+
+        .score-board {
+            background: #feebcc;
+            border-radius: 40px;
+            padding: 6px 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #bc6f25;
+        }
+
+        .new-quiz-btn {
+            background: #f7bc6c;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 8px 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: #4f2c0b;
+            font-family: inherit;
+            transition: 0.1s;
+            box-shadow: 0 3px 0 #bd7a3a;
+        }
+
+        .new-quiz-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #bd7a3a;
+        }
+
+        /* 立体图形卡片区域 (目标放置区) */
+        .shapes-area {
+            margin-bottom: 32px;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            margin: 10px 0 16px 0;
+            color: #b45f1b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .shapes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .shape-card {
+            background: #fff9ef;
+            border-radius: 48px;
+            padding: 16px 12px;
+            text-align: center;
+            border: 2px solid #ffe2bf;
+            box-shadow: 0 8px 0 #f2d5a8;
+            transition: 0.1s;
+        }
+
+        .shape-card.matched {
+            background: #d9f0cf;
+            border-color: #8bc34a;
+            opacity: 0.9;
+            box-shadow: 0 2px 8px rgba(100, 150, 50, 0.2);
+        }
+
+        .shape-icon {
+            font-size: 3rem;
+            margin-bottom: 6px;
+        }
+
+        .dimension {
+            font-size: 1rem;
+            background: #ffe1bd;
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 40px;
+            margin: 8px 0;
+            color: #b45f1b;
+        }
+
+        .drop-zone {
+            margin-top: 12px;
+            background: #fff3e3;
+            border-radius: 40px;
+            padding: 10px;
+            border: 2px dashed #f7bc6c;
+            transition: 0.1s;
+        }
+
+        .drop-zone span {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #c56a1a;
+        }
+
+        .matched-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #4f6b2c;
+            background: #c8e6b5;
+            border-radius: 40px;
+            padding: 6px;
+            display: inline-block;
+            min-width: 100px;
+        }
+
+        /* 可拖拽体积卡片区域 */
+        .cards-area {
+            margin-top: 20px;
+        }
+
+        .cards-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            justify-content: center;
+            align-items: center;
+            min-height: 140px;
+        }
+
+        .drag-card {
+            background: #ffe3c2;
+            width: 130px;
+            padding: 18px 0;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 60px;
+            cursor: grab;
+            transition: 0.05s linear;
+            box-shadow: 0 10px 0 #dba451;
+            color: #cf7a2c;
+            touch-action: none;
+            will-change: transform;
+        }
+
+        .drag-card:active {
+            cursor: grabbing;
+        }
+
+        .drag-card.dragging-origin {
+            opacity: 0.3;
+        }
+
+        /* 拖拽克隆样式 */
+        .dragging-clone {
+            position: fixed;
+            z-index: 9999;
+            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2));
+            transform: scale(1.05);
+            opacity: 0.85;
+            pointer-events: none;
+            background: #ffe3c2;
+            width: 130px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 60px;
+            padding: 18px 0;
+            color: #cf7a2c;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 提示消息 */
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffb347;
+            color: #4d2a0e;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeOut 1s ease forwards;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+                visibility: hidden;
+            }
+        }
+
+        .win-message {
+            text-align: center;
+            background: #fbd598;
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #a7490a;
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            80% {
+                transform: scale(1.02);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 15px;
+            color: #ca9a6b;
+        }
+
+        @media (max-width: 780px) {
+            body {
+                padding: 12px;
+            }
+
+            .flex-lesson {
+                flex-direction: column;
+            }
+
+            .knowledge-panel,
+            .game-panel {
+                margin: 12px;
+            }
+
+            .drag-card {
+                width: 110px;
+                font-size: 1.3rem;
+                padding: 14px 0;
+            }
+
+            .dragging-clone {
+                width: 110px;
+                font-size: 1.3rem;
+                padding: 14px 0;
+            }
+
+            .shapes-grid {
+                grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            }
+
+            .toast-msg {
+                white-space: normal;
+                width: 80%;
+                text-align: center;
+                font-size: 1rem;
+            }
+        }
+
+        .instruction {
+            font-size: 0.85rem;
+            text-align: center;
+            background: #ffefdb;
+            border-radius: 40px;
+            padding: 8px;
+            margin-top: 20px;
+            color: #bd762e;
+        }
+    </style>
+</head>
+<body>
+<div class="course-wrapper">
+    <div class="flex-lesson">
+        <!-- 左侧知识点区：长方体和正方体的体积 -->
+        <div class="knowledge-panel">
+            <div class="know-title">📦 体积小课堂 (1)</div>
+            <div class="formula-card">
+                <p>✨ 物体所占空间的大小叫做<strong>体积</strong>。</p>
+                <div class="formula">
+                    🧱 长方体体积 = 长 × 宽 × 高
+                </div>
+                <div class="formula">
+                    🧊 正方体体积 = 棱长 × 棱长 × 棱长
+                </div>
+                <p>常用单位：立方厘米(cm³)、立方分米(dm³)、立方米(m³)</p>
+            </div>
+            <div class="example-box">
+                🌰 <strong>例题1：</strong> 长方体长5cm、宽4cm、高3cm，体积？<br>
+                <span class="step">解：5×4×3 = 60 (cm³)</span><br>
+                🌰 <strong>例题2：</strong> 正方体棱长4cm，体积？<br>
+                <span class="step">解：4×4×4 = 64 (cm³)</span>
+            </div>
+            <div class="unit-note">
+                💡 小提醒：计算体积时，长、宽、高的单位要统一，结果加上“立方”单位哦！
+            </div>
+        </div>
+
+        <!-- 右侧游戏区：拖拽配对体积 -->
+        <div class="game-panel">
+            <div class="game-header">
+                <div class="game-title">🎯 体积配对拖拖乐</div>
+                <div class="score-board">配对: <span id="matchedCount">0</span> / <span id="totalCount">0</span></div>
+                <button class="new-quiz-btn" id="newQuizBtn">✨ 新的一批图形 ✨</button>
+            </div>
+
+            <!-- 立体图形卡片区域 (拖拽目标区) -->
+            <div class="shapes-area">
+                <div class="subtitle">📦 把正确的体积卡片拖到图形下方</div>
+                <div class="shapes-grid" id="shapesGrid"></div>
+            </div>
+
+            <!-- 可拖拽体积卡片区 -->
+            <div class="cards-area">
+                <div class="subtitle">🔢 拖拽下面的体积卡片</div>
+                <div class="cards-grid" id="cardsGrid"></div>
+            </div>
+            <div class="instruction">
+                🖱️ 按住体积卡片，拖到对应立体图形的「放置区」松手！配对正确卡片会消失并加分，错误会有提示。每个图形只能配对一次。
+            </div>
+        </div>
+    </div>
+    <footer>🐣 先计算再配对，牢记体积公式：长方体 V=abh，正方体 V=a³！</footer>
+</div>
+
+<script>
+    // ---------- 游戏核心 ----------
+    // 每个立体图形数据: { id, type, length, width, height, side, volume, description }
+    // 为了通用，长方体用 length, width, height；正方体用 side
+    let currentShapes = [];
+    let shapeItems = [];      // 存储DOM元素及配对状态 { element, dropZone, matched, volume, id }
+    let volumeCards = [];     // 存储未配对的卡片 { element, value }
+    let matchedCount = 0;
+    let totalPairs = 0;
+
+    // DOM 元素
+    const shapesGrid = document.getElementById('shapesGrid');
+    const cardsGrid = document.getElementById('cardsGrid');
+    const matchedSpan = document.getElementById('matchedCount');
+    const totalSpan = document.getElementById('totalCount');
+    const newQuizBtn = document.getElementById('newQuizBtn');
+
+    // 拖拽系统变量
+    let dragActive = false;
+    let dragSourceElement = null;
+    let dragSourceValue = null;
+    let dragClone = null;
+    let onMoveHandler = null;
+    let onUpHandler = null;
+
+    // 辅助: 随机整数 min~max
+    function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // 计算长方体体积
+    function calcCuboidVolume(l, w, h) {
+        return l * w * h;
+    }
+
+    // 计算正方体体积
+    function calcCubeVolume(side) {
+        return side * side * side;
+    }
+
+    // 生成一组新的立体图形（3~4个，混合长方体和正方体）
+    function generateNewShapes() {
+        const count = 3 + Math.floor(Math.random() * 2); // 3或4个
+        const newSet = [];
+        for (let i = 0; i < count; i++) {
+            // 随机决定是长方体还是正方体 (大约一半一半)
+            const isCube = Math.random() > 0.5;
+            if (isCube) {
+                let side = randomInt(2, 6);
+                let volume = calcCubeVolume(side);
+                newSet.push({
+                    id: i,
+                    type: 'cube',
+                    side: side,
+                    volume: volume,
+                    description: `正方体 棱长 ${side} cm`
+                });
+            } else {
+                let l = randomInt(2, 7);
+                let w = randomInt(2, 6);
+                let h = randomInt(2, 5);
+                let volume = calcCuboidVolume(l, w, h);
+                newSet.push({
+                    id: i,
+                    type: 'cuboid',
+                    length: l,
+                    width: w,
+                    height: h,
+                    volume: volume,
+                    description: `长方体 ${l}cm × ${w}cm × ${h}cm`
+                });
+            }
+        }
+        // 确保体积不重复，避免配对歧义（如果有重复，微调）
+        // 简单去重：若有重复体积，稍微调整最后一个图形的尺寸
+        for (let i = 0; i < newSet.length; i++) {
+            for (let j = i + 1; j < newSet.length; j++) {
+                if (newSet[i].volume === newSet[j].volume) {
+                    // 调整 j 的体积
+                    if (newSet[j].type === 'cube') {
+                        let newSide = newSet[j].side + 1;
+                        if (newSide > 8) newSide = 2;
+                        newSet[j].side = newSide;
+                        newSet[j].volume = calcCubeVolume(newSide);
+                    } else {
+                        let newL = newSet[j].length + 1;
+                        if (newL > 7) newL = 2;
+                        newSet[j].length = newL;
+                        newSet[j].volume = calcCuboidVolume(newSet[j].length, newSet[j].width, newSet[j].height);
+                    }
+                }
+            }
+        }
+        return newSet;
+    }
+
+    // 更新得分显示
+    function updateScoreUI() {
+        matchedSpan.innerText = matchedCount;
+        totalSpan.innerText = totalPairs;
+        if (matchedCount === totalPairs && totalPairs > 0) {
+            let winDiv = document.querySelector('.win-message-game');
+            if (!winDiv) {
+                winDiv = document.createElement('div');
+                winDiv.className = 'win-message win-message-game';
+                winDiv.innerText = '🎉 哇！全部体积配对正确！你已经是体积小专家啦！ 🎉';
+                document.querySelector('.game-panel').appendChild(winDiv);
+                setTimeout(() => {
+                    if (winDiv && winDiv.parentNode) winDiv.remove();
+                }, 3500);
+            }
+        } else {
+            let winDiv = document.querySelector('.win-message-game');
+            if (winDiv) winDiv.remove();
+        }
+    }
+
+    // 提示消息
+    function showTip(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 1300);
+    }
+
+    // 配对成功：移除卡片，标记立体图形为已配对
+    function pairSuccess(shapeItem, cardElement) {
+        if (shapeItem.matched) return false;
+        // 移除卡片
+        const cardIndex = volumeCards.findIndex(c => c.element === cardElement);
+        if (cardIndex !== -1) {
+            volumeCards[cardIndex].element.remove();
+            volumeCards.splice(cardIndex, 1);
+        }
+        // 标记立体图形为已配对，更新UI
+        shapeItem.matched = true;
+        const dropZoneDiv = shapeItem.dropZone;
+        dropZoneDiv.innerHTML = `<span class="matched-value">✅ ${shapeItem.volume} cm³</span>`;
+        shapeItem.element.classList.add('matched');
+        matchedCount++;
+        updateScoreUI();
+        return true;
+    }
+
+    // 尝试匹配: 卡片值 与 立体图形的体积是否一致
+    function tryMatchWithShape(shapeItem, cardValue, cardElement) {
+        if (shapeItem.matched) {
+            showTip(`这个图形已经配对过了！不能重复配对哟`);
+            return false;
+        }
+        if (shapeItem.volume === cardValue) {
+            pairSuccess(shapeItem, cardElement);
+            let detail = shapeItem.type === 'cube' ? `棱长 ${shapeItem.side} cm` : `${shapeItem.length}×${shapeItem.width}×${shapeItem.height} cm`;
+            showTip(`✅ 正确！ ${detail} 的体积 = ${cardValue} cm³`, false);
+            return true;
+        } else {
+            let correctVol = shapeItem.volume;
+            showTip(`❌ 不对哦！ 这个图形的体积是 ${correctVol} cm³，再算一遍公式吧～`);
+            return false;
+        }
+    }
+
+    // ---------- 自定义拖拽实现 (鼠标+触摸) ----------
+    function onDragStart(e, dragElement, value) {
+        if (dragActive) return;
+        e.preventDefault();
+        dragActive = true;
+        dragSourceElement = dragElement;
+        dragSourceValue = value;
+
+        dragSourceElement.classList.add('dragging-origin');
+
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        // 克隆体
+        dragClone = document.createElement('div');
+        dragClone.className = 'dragging-clone';
+        dragClone.innerText = value;
+        dragClone.style.left = clientX - 65 + 'px';
+        dragClone.style.top = clientY - 40 + 'px';
+        document.body.appendChild(dragClone);
+
+        onMoveHandler = onGlobalMove;
+        onUpHandler = onGlobalUp;
+        window.addEventListener('mousemove', onMoveHandler);
+        window.addEventListener('mouseup', onUpHandler);
+        window.addEventListener('touchmove', onMoveHandler, { passive: false });
+        window.addEventListener('touchend', onUpHandler);
+        window.addEventListener('touchcancel', onUpHandler);
+    }
+
+    function onGlobalMove(e) {
+        if (!dragActive || !dragClone) return;
+        e.preventDefault();
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        dragClone.style.left = clientX - 65 + 'px';
+        dragClone.style.top = clientY - 40 + 'px';
+    }
+
+    function onGlobalUp(e) {
+        if (!dragActive) return;
+
+        let endX, endY;
+        if (e.changedTouches) {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+        } else {
+            endX = e.clientX;
+            endY = e.clientY;
+        }
+
+        // 隐藏克隆体检测下方元素
+        if (dragClone) dragClone.style.display = 'none';
+        const elementsUnderCursor = document.elementsFromPoint(endX, endY);
+        if (dragClone) dragClone.style.display = '';
+
+        let targetDropZone = null;
+        let targetShapeItem = null;
+        for (let el of elementsUnderCursor) {
+            if (el.classList && el.classList.contains('drop-zone')) {
+                targetDropZone = el;
+                // 找到对应的shapeItem
+                const parentCard = targetDropZone.closest('.shape-card');
+                if (parentCard) {
+                    targetShapeItem = shapeItems.find(item => item.element === parentCard);
+                }
+                break;
+            }
+        }
+
+        if (targetShapeItem && dragSourceElement && !targetShapeItem.matched) {
+            tryMatchWithShape(targetShapeItem, dragSourceValue, dragSourceElement);
+        } else if (targetShapeItem && targetShapeItem.matched) {
+            showTip(`这个图形已经配对过了！试试别的吧～`);
+        } else {
+            if (dragSourceElement) showTip(`✨ 要把卡片拖到图形下方的「放置区」虚线框内哦！`);
+        }
+
+        // 清理克隆体
+        if (dragClone) dragClone.remove();
+        dragClone = null;
+        if (dragSourceElement) {
+            dragSourceElement.classList.remove('dragging-origin');
+        }
+
+        // 解绑事件
+        window.removeEventListener('mousemove', onMoveHandler);
+        window.removeEventListener('mouseup', onUpHandler);
+        window.removeEventListener('touchmove', onMoveHandler);
+        window.removeEventListener('touchend', onUpHandler);
+        window.removeEventListener('touchcancel', onUpHandler);
+
+        dragActive = false;
+        dragSourceElement = null;
+        dragSourceValue = null;
+    }
+
+    // 为每个卡片绑定拖拽启动事件
+    function attachDragToCard(cardElement, value) {
+        cardElement.removeEventListener('mousedown', onMouseDown);
+        cardElement.removeEventListener('touchstart', onTouchStart);
+        cardElement.addEventListener('mousedown', onMouseDown);
+        cardElement.addEventListener('touchstart', onTouchStart, { passive: false });
+
+        function onMouseDown(e) {
+            e.preventDefault();
+            onDragStart(e, cardElement, value);
+        }
+        function onTouchStart(e) {
+            e.preventDefault();
+            onDragStart(e, cardElement, value);
+        }
+        cardElement._dragMouse = onMouseDown;
+        cardElement._dragTouch = onTouchStart;
+    }
+
+    // 构建整个游戏界面（根据 currentShapes）
+    function buildGame() {
+        // 清空容器
+        shapesGrid.innerHTML = '';
+        cardsGrid.innerHTML = '';
+        shapeItems = [];
+        volumeCards = [];
+
+        // 1. 构建立体图形卡片区
+        currentShapes.forEach(shape => {
+            const card = document.createElement('div');
+            card.className = 'shape-card';
+            card.setAttribute('data-id', shape.id);
+            
+            // 图标和尺寸描述
+            const iconSpan = document.createElement('div');
+            iconSpan.className = 'shape-icon';
+            iconSpan.innerText = shape.type === 'cube' ? '🧊' : '📦';
+            
+            const dimSpan = document.createElement('div');
+            dimSpan.className = 'dimension';
+            if (shape.type === 'cube') {
+                dimSpan.innerText = `正方体 棱长 = ${shape.side} cm`;
+            } else {
+                dimSpan.innerText = `长方体 ${shape.length} × ${shape.width} × ${shape.height} cm`;
+            }
+            
+            const dropZone = document.createElement('div');
+            dropZone.className = 'drop-zone';
+            dropZone.innerHTML = `<span>⬅️ 把体积拖到这里 ➡️</span>`;
+            
+            card.appendChild(iconSpan);
+            card.appendChild(dimSpan);
+            card.appendChild(dropZone);
+            shapesGrid.appendChild(card);
+            
+            shapeItems.push({
+                element: card,
+                dropZone: dropZone,
+                matched: false,
+                volume: shape.volume,
+                id: shape.id,
+                shapeData: shape
+            });
+        });
+        
+        // 2. 构建体积卡片（随机打乱顺序）
+        const volumes = currentShapes.map(s => s.volume);
+        // 打乱
+        for (let i = volumes.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [volumes[i], volumes[j]] = [volumes[j], volumes[i]];
+        }
+        volumes.forEach(vol => {
+            const card = document.createElement('div');
+            card.className = 'drag-card';
+            card.innerText = vol + ' cm³';
+            card.setAttribute('data-value', vol);
+            cardsGrid.appendChild(card);
+            volumeCards.push({ element: card, value: vol });
+            attachDragToCard(card, vol);
+        });
+        
+        matchedCount = 0;
+        totalPairs = currentShapes.length;
+        updateScoreUI();
+    }
+
+    // 重置/新游戏: 生成新的一组立体图形
+    function newGame() {
+        // 清除任何进行中的拖拽
+        if (dragActive && dragClone) {
+            dragClone.remove();
+            dragClone = null;
+            if (dragSourceElement) dragSourceElement.classList.remove('dragging-origin');
+            dragActive = false;
+        }
+        currentShapes = generateNewShapes();
+        buildGame();
+        // 移除胜利消息
+        const winDiv = document.querySelector('.win-message-game');
+        if (winDiv) winDiv.remove();
+    }
+
+    // 初始化（默认生成一组友好的图形）
+    function init() {
+        // 初始使用三个混合图形
+        currentShapes = [
+            { id: 0, type: 'cuboid', length: 4, width: 3, height: 2, volume: 24, description: '长方体 4×3×2 cm' },
+            { id: 1, type: 'cube', side: 3, volume: 27, description: '正方体 棱长 3 cm' },
+            { id: 2, type: 'cuboid', length: 5, width: 2, height: 3, volume: 30, description: '长方体 5×2×3 cm' }
+        ];
+        buildGame();
+    }
+
+    newQuizBtn.addEventListener('click', () => {
+        newGame();
+    });
+
+    init();
+</script>
+</body>
+</html>

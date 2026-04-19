@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>体积单位 | 趣味拖拽配对游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* 避免拖拽时选中文字/图片 */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #fef7e8;
+            font-family: 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI Emoji', cursive, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* 主容器 */
+        .course-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 252, 240, 0.9);
+            border-radius: 64px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.05), 0 5px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .flex-lesson {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* 左侧知识点区域 */
+        .knowledge-panel {
+            flex: 1.2;
+            min-width: 260px;
+            background: #fffef5;
+            margin: 20px 12px 20px 20px;
+            border-radius: 48px;
+            padding: 24px 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid #ffe0b5;
+        }
+
+        /* 右侧游戏区域 */
+        .game-panel {
+            flex: 2;
+            min-width: 300px;
+            background: #fffcf0;
+            margin: 20px 20px 20px 12px;
+            border-radius: 48px;
+            padding: 22px 20px;
+            border: 1px solid #ffdead;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 知识点样式 */
+        .know-title {
+            background: #ffd89a;
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 60px;
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #b45f1b;
+            margin-bottom: 20px;
+        }
+
+        .unit-card {
+            background: #fff1e0;
+            border-radius: 32px;
+            padding: 16px;
+            margin: 18px 0;
+        }
+        .unit-item {
+            margin: 14px 0;
+            border-left: 5px solid #f7bc6c;
+            padding-left: 14px;
+        }
+        .unit-item strong {
+            font-size: 1.2rem;
+            color: #c56a1a;
+        }
+        .convert-note {
+            background: #fff0e0;
+            border-radius: 28px;
+            padding: 12px;
+            margin-top: 16px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* 右侧游戏头部 */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 2px dashed #ffcd94;
+            padding-bottom: 12px;
+        }
+        .game-title {
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #cc7b2c;
+            background: #fff0df;
+            padding: 0 18px;
+            border-radius: 50px;
+        }
+        .score-board {
+            background: #feebcc;
+            border-radius: 40px;
+            padding: 6px 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #bc6f25;
+        }
+        .reset-btn {
+            background: #f7bc6c;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 8px 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: #4f2c0b;
+            font-family: inherit;
+            transition: 0.1s;
+            box-shadow: 0 3px 0 #bd7a3a;
+        }
+        .reset-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #bd7a3a;
+        }
+
+        /* 篮子区域 (单位放置区) */
+        .baskets-area {
+            margin-bottom: 28px;
+        }
+        .subtitle {
+            font-size: 1.3rem;
+            margin: 10px 0 16px 0;
+            color: #b45f1b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .baskets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .basket {
+            background: #fff9ef;
+            border-radius: 48px;
+            padding: 16px 8px;
+            text-align: center;
+            border: 2px solid #ffe2bf;
+            box-shadow: 0 6px 0 #f2d5a8;
+            transition: 0.1s;
+            cursor: default;
+        }
+        .basket h3 {
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+            color: #c56a1a;
+        }
+        .basket p {
+            background: #ffe1bd;
+            border-radius: 60px;
+            padding: 5px;
+            font-size: 0.8rem;
+            color: #aa6d2c;
+        }
+
+        /* 物品卡片区域 (可拖拽) */
+        .items-area {
+            margin-top: 20px;
+        }
+        .cards-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+        .drag-item {
+            background: #ffe3c2;
+            width: 140px;
+            padding: 18px 6px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 55px;
+            cursor: grab;
+            transition: 0.05s linear;
+            box-shadow: 0 10px 0 #dba451;
+            color: #cf7a2c;
+            touch-action: none;
+            will-change: transform;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .drag-item span:first-child {
+            font-size: 1.8rem;
+        }
+        .drag-item:active {
+            cursor: grabbing;
+        }
+        .drag-item.dragging-origin {
+            opacity: 0.3;
+        }
+
+        /* 拖拽克隆样式 */
+        .dragging-clone {
+            position: fixed;
+            z-index: 9999;
+            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2));
+            transform: scale(1.05);
+            opacity: 0.85;
+            pointer-events: none;
+            background: #ffdead;
+            width: 140px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 55px;
+            padding: 18px 6px;
+            color: #cf7a2c;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 提示消息 */
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffb347;
+            color: #4d2a0e;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeOut 1s ease forwards;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0);}
+            70% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden;}
+        }
+
+        .win-message {
+            text-align: center;
+            background: #fbd598;
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #a7490a;
+            animation: bounce 0.5s;
+        }
+        @keyframes bounce {
+            0% { transform: scale(0.9); opacity: 0; }
+            80% { transform: scale(1.02);}
+            100% { transform: scale(1);}
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 15px;
+            color: #ca9a6b;
+        }
+
+        @media (max-width: 780px) {
+            body { padding: 12px; }
+            .flex-lesson { flex-direction: column; }
+            .knowledge-panel, .game-panel { margin: 12px; }
+            .drag-item { width: 120px; font-size: 0.9rem; padding: 12px 4px; }
+            .drag-item span:first-child { font-size: 1.5rem; }
+            .dragging-clone { width: 120px; font-size: 0.9rem; padding: 12px 4px; }
+            .baskets-grid { grid-template-columns: repeat(auto-fit, minmax(95px, 1fr)); }
+            .basket h3 { font-size: 1rem; }
+            .toast-msg { white-space: normal; width: 80%; text-align: center; font-size: 1rem; }
+        }
+
+        .instruction {
+            font-size: 0.85rem;
+            text-align: center;
+            background: #ffefdb;
+            border-radius: 40px;
+            padding: 8px;
+            margin-top: 20px;
+            color: #bd762e;
+        }
+    </style>
+</head>
+<body>
+<div class="course-wrapper">
+    <div class="flex-lesson">
+        <!-- 左侧知识点区：体积单位 -->
+        <div class="knowledge-panel">
+            <div class="know-title">📦 体积单位小课堂</div>
+            <div class="unit-card">
+                <div class="unit-item">
+                    <strong>📌 立方厘米 (cm³)</strong><br>
+                    棱长1厘米的正方体，体积是1立方厘米。<br>
+                    🌰 大约一个骰子、一颗樱桃的大小。
+                </div>
+                <div class="unit-item">
+                    <strong>📌 立方分米 (dm³)</strong><br>
+                    棱长1分米的正方体，体积是1立方分米。<br>
+                    🌰 大约一个粉笔盒、一个魔方的大小。
+                </div>
+                <div class="unit-item">
+                    <strong>📌 立方米 (m³)</strong><br>
+                    棱长1米的正方体，体积是1立方米。<br>
+                    🌰 大约一台洗衣机、一个小讲台的大小。
+                </div>
+                <div class="unit-item">
+                    <strong>🥛 升 (L) 与 毫升 (mL)</strong><br>
+                    1升 = 1立方分米，1毫升 = 1立方厘米。<br>
+                    🌰 一瓶矿泉水约500mL，一大桶油约5L。
+                </div>
+                <div class="convert-note">
+                    ✨ 换算口诀：1 m³ = 1000 dm³ &nbsp;&nbsp; 1 dm³ = 1000 cm³<br>
+                    1 L = 1000 mL &nbsp;&nbsp; 1 L = 1 dm³ &nbsp;&nbsp; 1 mL = 1 cm³
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧游戏区：拖拽配对（物品 → 体积单位） -->
+        <div class="game-panel">
+            <div class="game-header">
+                <div class="game-title">🎯 单位配对拖拖乐</div>
+                <div class="score-board">配对成功: <span id="matchedCount">0</span> / <span id="totalCount">0</span></div>
+                <button class="reset-btn" id="resetGameBtn">🔄 新的一局</button>
+            </div>
+
+            <!-- 目标单位篮子 -->
+            <div class="baskets-area">
+                <div class="subtitle">🧺 拖到这里 → 正确的体积单位篮子</div>
+                <div class="baskets-grid" id="basketsGrid">
+                    <div class="basket" data-unit="cm³">
+                        <h3>📏 立方厘米</h3>
+                        <p>cm³</p>
+                    </div>
+                    <div class="basket" data-unit="dm³">
+                        <h3>📐 立方分米</h3>
+                        <p>dm³</p>
+                    </div>
+                    <div class="basket" data-unit="m³">
+                        <h3>🏢 立方米</h3>
+                        <p>m³</p>
+                    </div>
+                    <div class="basket" data-unit="L">
+                        <h3>🥤 升</h3>
+                        <p>L (立方分米)</p>
+                    </div>
+                    <div class="basket" data-unit="mL">
+                        <h3>💧 毫升</h3>
+                        <p>mL (立方厘米)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 可拖拽物品卡片区 -->
+            <div class="items-area">
+                <div class="subtitle">🎲 拖拽下面的物品卡片</div>
+                <div class="cards-grid" id="itemsGrid"></div>
+            </div>
+            <div class="instruction">
+                🖱️ 按住物品卡片，拖到上方正确的单位篮子里松手！配对正确卡片会消失并加分，错误会有提示。每个物品只能配对一次。
+            </div>
+        </div>
+    </div>
+    <footer>🐣 小挑战：把每个物品跟它最合适的体积单位配对吧！</footer>
+</div>
+
+<script>
+    // ---------- 游戏数据 ----------
+    // 物品清单：每个物品包含显示文本、图标、对应的单位 (cm³, dm³, m³, L, mL)
+    const itemsData = [
+        { id: 0, name: "骰子", icon: "🎲", unit: "cm³", description: "一个小骰子" },
+        { id: 1, name: "粉笔盒", icon: "📦", unit: "dm³", description: "粉笔盒大小" },
+        { id: 2, name: "教室空间", icon: "🏫", unit: "m³", description: "整个教室的体积" },
+        { id: 3, name: "一盒牛奶", icon: "🥛", unit: "mL", description: "250毫升牛奶" },
+        { id: 4, name: "大水桶", icon: "🪣", unit: "L", description: "10升水桶" },
+        { id: 5, name: "大可乐瓶", icon: "🥤", unit: "L", description: "1.5升饮料" },
+        { id: 6, name: "橡皮擦", icon: "🧽", unit: "cm³", description: "约10立方厘米" }
+    ];
+
+    let activeItems = [];          // 未配对的物品卡片 { element, itemData }
+    let matchedCount = 0;
+    let totalItems = itemsData.length;
+
+    // DOM 元素
+    const itemsGrid = document.getElementById('itemsGrid');
+    const matchedSpan = document.getElementById('matchedCount');
+    const totalSpan = document.getElementById('totalCount');
+    const resetBtn = document.getElementById('resetGameBtn');
+
+    // 拖拽系统变量
+    let dragActive = false;
+    let dragSourceElement = null;
+    let dragSourceItemData = null;
+    let dragClone = null;
+    let onMoveHandler = null;
+    let onUpHandler = null;
+
+    // 更新计分板
+    function updateScoreUI() {
+        matchedSpan.innerText = matchedCount;
+        totalSpan.innerText = totalItems;
+        if (matchedCount === totalItems && totalItems > 0) {
+            let winDiv = document.querySelector('.win-message-game');
+            if (!winDiv) {
+                winDiv = document.createElement('div');
+                winDiv.className = 'win-message win-message-game';
+                winDiv.innerText = '🎉 太厉害了！所有物品都找到了正确的体积单位！ 🎉';
+                document.querySelector('.game-panel').appendChild(winDiv);
+                setTimeout(() => {
+                    if (winDiv && winDiv.parentNode) winDiv.remove();
+                }, 3500);
+            }
+        } else {
+            let winDiv = document.querySelector('.win-message-game');
+            if (winDiv) winDiv.remove();
+        }
+    }
+
+    // 提示消息
+    function showTip(message, isError = true) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 1300);
+    }
+
+    // 配对成功：移除卡片，增加分数
+    function pairSuccess(cardElement) {
+        const cardIndex = activeItems.findIndex(item => item.element === cardElement);
+        if (cardIndex !== -1) {
+            activeItems[cardIndex].element.remove();
+            activeItems.splice(cardIndex, 1);
+            matchedCount++;
+            updateScoreUI();
+            return true;
+        }
+        return false;
+    }
+
+    // 尝试匹配篮子
+    function tryMatchWithBasket(basketElement, itemData, dragCardElement) {
+        if (!basketElement) return false;
+        const targetUnit = basketElement.getAttribute('data-unit');
+        if (!targetUnit) return false;
+        
+        const itemUnit = itemData.unit;
+        if (targetUnit === itemUnit) {
+            // 配对正确
+            pairSuccess(dragCardElement);
+            let unitShow = (targetUnit === 'cm³' ? '立方厘米' : (targetUnit === 'dm³' ? '立方分米' : (targetUnit === 'm³' ? '立方米' : (targetUnit === 'L' ? '升' : '毫升'))));
+            showTip(`✅ 正确！ ${itemData.icon} ${itemData.name} 用 ${unitShow} 作单位很合适！`, false);
+            return true;
+        } else {
+            // 错误提示
+            let correctUnit = '';
+            if (itemUnit === 'cm³') correctUnit = '立方厘米 (cm³)';
+            else if (itemUnit === 'dm³') correctUnit = '立方分米 (dm³)';
+            else if (itemUnit === 'm³') correctUnit = '立方米 (m³)';
+            else if (itemUnit === 'L') correctUnit = '升 (L)';
+            else if (itemUnit === 'mL') correctUnit = '毫升 (mL)';
+            showTip(`❌ 不对哦！ ${itemData.icon} ${itemData.name} 应该用 ${correctUnit} 来表示体积。再试试看！`);
+            return false;
+        }
+    }
+
+    // ---------- 自定义拖拽实现 (鼠标+触摸) ----------
+    function onDragStart(e, dragElement, itemData) {
+        if (dragActive) return;
+        e.preventDefault();
+        dragActive = true;
+        dragSourceElement = dragElement;
+        dragSourceItemData = itemData;
+
+        dragSourceElement.classList.add('dragging-origin');
+
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        // 创建克隆体，复制内容
+        dragClone = document.createElement('div');
+        dragClone.className = 'dragging-clone';
+        dragClone.innerHTML = `<span>${itemData.icon}</span><span>${itemData.name}</span>`;
+        dragClone.style.left = clientX - 70 + 'px';
+        dragClone.style.top = clientY - 40 + 'px';
+        document.body.appendChild(dragClone);
+
+        onMoveHandler = onGlobalMove;
+        onUpHandler = onGlobalUp;
+        window.addEventListener('mousemove', onMoveHandler);
+        window.addEventListener('mouseup', onUpHandler);
+        window.addEventListener('touchmove', onMoveHandler, { passive: false });
+        window.addEventListener('touchend', onUpHandler);
+        window.addEventListener('touchcancel', onUpHandler);
+    }
+
+    function onGlobalMove(e) {
+        if (!dragActive || !dragClone) return;
+        e.preventDefault();
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        dragClone.style.left = clientX - 70 + 'px';
+        dragClone.style.top = clientY - 40 + 'px';
+    }
+
+    function onGlobalUp(e) {
+        if (!dragActive) return;
+
+        let endX, endY;
+        if (e.changedTouches) {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+        } else {
+            endX = e.clientX;
+            endY = e.clientY;
+        }
+
+        // 隐藏克隆体以检测下方元素
+        if (dragClone) dragClone.style.display = 'none';
+        const elementsUnderCursor = document.elementsFromPoint(endX, endY);
+        if (dragClone) dragClone.style.display = '';
+
+        let targetBasket = null;
+        for (let el of elementsUnderCursor) {
+            if (el.classList && el.classList.contains('basket')) {
+                targetBasket = el;
+                break;
+            }
+        }
+
+        if (targetBasket && dragSourceElement && dragSourceItemData) {
+            tryMatchWithBasket(targetBasket, dragSourceItemData, dragSourceElement);
+        } else {
+            if (dragSourceElement) showTip('✨ 要把物品拖到上面的单位篮子里哟！');
+        }
+
+        // 清理克隆体
+        if (dragClone) dragClone.remove();
+        dragClone = null;
+        if (dragSourceElement) {
+            dragSourceElement.classList.remove('dragging-origin');
+        }
+
+        // 解绑事件
+        window.removeEventListener('mousemove', onMoveHandler);
+        window.removeEventListener('mouseup', onUpHandler);
+        window.removeEventListener('touchmove', onMoveHandler);
+        window.removeEventListener('touchend', onUpHandler);
+        window.removeEventListener('touchcancel', onUpHandler);
+
+        dragActive = false;
+        dragSourceElement = null;
+        dragSourceItemData = null;
+    }
+
+    // 为每个物品卡片绑定拖拽事件
+    function attachDragToItem(cardElement, itemData) {
+        cardElement.removeEventListener('mousedown', onMouseDown);
+        cardElement.removeEventListener('touchstart', onTouchStart);
+        cardElement.addEventListener('mousedown', onMouseDown);
+        cardElement.addEventListener('touchstart', onTouchStart, { passive: false });
+
+        function onMouseDown(e) {
+            e.preventDefault();
+            onDragStart(e, cardElement, itemData);
+        }
+        function onTouchStart(e) {
+            e.preventDefault();
+            onDragStart(e, cardElement, itemData);
+        }
+        cardElement._dragMouse = onMouseDown;
+        cardElement._dragTouch = onTouchStart;
+    }
+
+    // 构建物品卡片 (打乱顺序)
+    function buildItemsCards() {
+        itemsGrid.innerHTML = '';
+        activeItems = [];
+        // 打乱物品顺序让游戏更有挑战
+        const shuffledItems = [...itemsData];
+        for (let i = shuffledItems.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
+        }
+        shuffledItems.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'drag-item';
+            card.innerHTML = `<span>${item.icon}</span><span>${item.name}</span>`;
+            card.setAttribute('data-unit', item.unit);
+            itemsGrid.appendChild(card);
+            activeItems.push({ element: card, itemData: item });
+            attachDragToItem(card, item);
+        });
+        matchedCount = 0;
+        updateScoreUI();
+    }
+
+    // 重置游戏
+    function resetGame() {
+        // 清除任何进行中的拖拽
+        if (dragActive && dragClone) {
+            dragClone.remove();
+            dragClone = null;
+            if (dragSourceElement) dragSourceElement.classList.remove('dragging-origin');
+            dragActive = false;
+        }
+        // 重新生成卡片
+        buildItemsCards();
+        // 移除胜利消息
+        const winDiv = document.querySelector('.win-message-game');
+        if (winDiv) winDiv.remove();
+    }
+
+    // 初始化游戏
+    function initGame() {
+        buildItemsCards();
+    }
+
+    resetBtn.addEventListener('click', resetGame);
+    initGame();
+</script>
+</body>
+</html>

@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>分数除以整数 | 趣味拖拽配对游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #fef5e7;
+            font-family: 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI Emoji', cursive, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .course-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 252, 240, 0.92);
+            border-radius: 64px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.05), 0 5px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .flex-lesson {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* 左侧知识点区域 */
+        .knowledge-panel {
+            flex: 1.2;
+            min-width: 260px;
+            background: #fffef5;
+            margin: 20px 12px 20px 20px;
+            border-radius: 48px;
+            padding: 24px 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid #ffe0b5;
+        }
+
+        /* 右侧游戏区域 */
+        .game-panel {
+            flex: 2;
+            min-width: 300px;
+            background: #fffcf0;
+            margin: 20px 20px 20px 12px;
+            border-radius: 48px;
+            padding: 22px 20px;
+            border: 1px solid #ffdead;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 知识点样式 */
+        .know-title {
+            background: #ffd89a;
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 60px;
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #b45f1b;
+            margin-bottom: 20px;
+        }
+
+        .rule-box {
+            background: #fff7e8;
+            border-radius: 28px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .formula {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #e67e22;
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        .example {
+            background: #ffe8d4;
+            border-radius: 28px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 0.95rem;
+        }
+
+        /* 标准分数样式 */
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 1.2;
+        }
+        .fraction .numerator {
+            display: block;
+            font-size: 1em;
+        }
+        .fraction .denominator {
+            display: block;
+            border-top: 2px solid currentColor;
+            font-size: 1em;
+        }
+
+        .drag-card .fraction .numerator,
+        .drag-card .fraction .denominator,
+        .target-slot .fraction .numerator,
+        .target-slot .fraction .denominator {
+            font-size: 1.2rem;
+        }
+
+        .number-plain {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        /* 右侧游戏头部 */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 2px dashed #ffcd94;
+            padding-bottom: 12px;
+        }
+
+        .game-title {
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #cc7b2c;
+            background: #fff0df;
+            padding: 0 18px;
+            border-radius: 50px;
+        }
+
+        .score-board {
+            background: #feebcc;
+            border-radius: 40px;
+            padding: 6px 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #bc6f25;
+        }
+
+        .reset-btn {
+            background: #f7bc6c;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 8px 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: #4f2c0b;
+            font-family: inherit;
+            transition: 0.1s;
+            box-shadow: 0 3px 0 #bd7a3a;
+        }
+
+        .reset-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #bd7a3a;
+        }
+
+        /* 配对区域 */
+        .pairing-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 220px;
+            background: #fff8ec;
+            border-radius: 48px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .column h3 {
+            text-align: center;
+            color: #b45f1b;
+            margin-bottom: 16px;
+            font-size: 1.3rem;
+        }
+
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* 可拖拽算式卡片 */
+        .drag-card {
+            background: #ffe3c2;
+            border-radius: 40px;
+            padding: 14px 8px;
+            text-align: center;
+            border: 2px solid #ffd7a0;
+            box-shadow: 0 5px 0 #dba451;
+            cursor: grab;
+            touch-action: none;
+            transition: 0.1s;
+            color: #c56a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 85px;
+        }
+
+        .drag-card:active {
+            cursor: grabbing;
+        }
+
+        .drag-card.dragging-origin {
+            opacity: 0.3;
+        }
+
+        /* 目标槽位 */
+        .target-slot {
+            background: #fff3e3;
+            border: 2px solid #f7bc6c;
+            border-radius: 40px;
+            padding: 14px 8px;
+            text-align: center;
+            transition: 0.1s;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .target-slot .target-value {
+            background: #fff0e0;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            color: #b45f1b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .target-slot .drop-area {
+            width: 100%;
+            padding: 8px;
+            border-radius: 40px;
+            background: #fff8e8;
+            font-size: 1rem;
+            color: #a7581c;
+        }
+
+        .target-slot.filled {
+            background: #c8e6b5;
+            border-color: #8bc34a;
+        }
+
+        .target-slot.filled .target-value {
+            background: #a8d68a;
+            color: #2c5e1a;
+        }
+
+        /* 拖拽克隆 */
+        .dragging-clone {
+            position: fixed;
+            z-index: 9999;
+            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2));
+            transform: scale(1.05);
+            opacity: 0.85;
+            pointer-events: none;
+            background: #ffe3c2;
+            border-radius: 40px;
+            padding: 10px 20px;
+            text-align: center;
+            color: #cf7a2c;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 提示消息 */
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffb347;
+            color: #4d2a0e;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeOut 1s ease forwards;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+                visibility: hidden;
+            }
+        }
+
+        .win-message {
+            text-align: center;
+            background: #fbd598;
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #a7490a;
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            80% {
+                transform: scale(1.02);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 15px;
+            color: #ca9a6b;
+        }
+
+        @media (max-width: 780px) {
+            body {
+                padding: 12px;
+            }
+
+            .flex-lesson {
+                flex-direction: column;
+            }
+
+            .knowledge-panel,
+            .game-panel {
+                margin: 12px;
+            }
+
+            .pairing-area {
+                flex-direction: column;
+            }
+
+            .drag-card, .target-slot {
+                padding: 10px 6px;
+            }
+
+            .target-slot .target-value {
+                font-size: 1rem;
+            }
+
+            .toast-msg {
+                white-space: normal;
+                width: 80%;
+                text-align: center;
+                font-size: 1rem;
+            }
+        }
+
+        .instruction {
+            font-size: 0.85rem;
+            text-align: center;
+            background: #ffefdb;
+            border-radius: 40px;
+            padding: 8px;
+            margin-top: 20px;
+            color: #bd762e;
+        }
+    </style>
+</head>
+<body>
+<div class="course-wrapper">
+    <div class="flex-lesson">
+        <!-- 左侧知识点区：分数除以整数 -->
+        <div class="knowledge-panel">
+            <div class="know-title">➗ 分数除以整数</div>
+            <div class="rule-box">
+                <p>✨ <strong>计算方法：</strong></p>
+                <p>分数除以整数（0除外），等于分数乘这个整数的倒数。</p>
+                <div class="formula">
+                    <span class="fraction"><span class="numerator">a</span><span class="denominator">b</span></span> ÷ c = <span class="fraction"><span class="numerator">a</span><span class="denominator">b</span></span> × <span class="fraction"><span class="numerator">1</span><span class="denominator">c</span></span>
+                </div>
+            </div>
+            <div class="example">
+                🌰 <strong>例1：</strong> <span class="fraction"><span class="numerator">2</span><span class="denominator">3</span></span> ÷ 2 = <span class="fraction"><span class="numerator">2</span><span class="denominator">3</span></span> × <span class="fraction"><span class="numerator">1</span><span class="denominator">2</span></span> = <span class="fraction"><span class="numerator">2×1</span><span class="denominator">3×2</span></span> = <span class="fraction"><span class="numerator">1</span><span class="denominator">3</span></span><br>
+                🌰 <strong>例2：</strong> <span class="fraction"><span class="numerator">4</span><span class="denominator">5</span></span> ÷ 3 = <span class="fraction"><span class="numerator">4</span><span class="denominator">5</span></span> × <span class="fraction"><span class="numerator">1</span><span class="denominator">3</span></span> = <span class="fraction"><span class="numerator">4</span><span class="denominator">15</span></span>
+            </div>
+            <div class="example">
+                💡 <strong>小窍门：</strong> 除以一个整数，就相当于把分子除以这个整数（如果能整除），或者分母乘这个整数。<br>
+                结果一定要化成最简分数！
+            </div>
+            <div class="example">
+                🎮 <strong>游戏任务：</strong> 左边是算式卡片，右边是结果目标框。将算式拖到正确的结果框内，配对成功即可得分！
+            </div>
+        </div>
+
+        <!-- 右侧游戏区：拖拽配对 -->
+        <div class="game-panel">
+            <div class="game-header">
+                <div class="game-title">🎯 分数除以整数 · 配对挑战</div>
+                <div class="score-board">配对: <span id="matchedCount">0</span> / <span id="totalCount">0</span></div>
+                <button class="reset-btn" id="resetBtn">🔄 新的一局</button>
+            </div>
+
+            <div class="pairing-area">
+                <div class="column">
+                    <h3>📌 算式卡片（拖拽）</h3>
+                    <div class="card-list" id="dragList"></div>
+                </div>
+                <div class="column">
+                    <h3>🎯 结果目标（拖到这里）</h3>
+                    <div class="card-list" id="dropList"></div>
+                </div>
+            </div>
+            <div class="instruction">
+                🖱️ 按住左边的算式卡片，拖到右边对应的结果目标框内。配对正确卡片会消失并加分。
+            </div>
+        </div>
+    </div>
+    <footer>🐣 小提示：分数除以整数 = 分数乘整数的倒数，结果记得约分！</footer>
+</div>
+
+<script>
+    // ---------- 辅助函数：生成标准分数HTML ----------
+    function formatFraction(numerator, denominator) {
+        return `<div class="fraction"><span class="numerator">${numerator}</span><span class="denominator">${denominator}</span></div>`;
+    }
+
+    // 格式化算式或结果（可能包含整数）
+    function formatMathExpression(expr) {
+        // expr 可能是 "2/3 ÷ 2" 或 "1/3"
+        if (expr.includes('÷')) {
+            let parts = expr.split('÷');
+            let left = parts[0].trim();
+            let right = parts[1].trim();
+            let leftHtml = left.includes('/') ? formatFraction(left.split('/')[0], left.split('/')[1]) : `<span class="number-plain">${left}</span>`;
+            let rightHtml = right.includes('/') ? formatFraction(right.split('/')[0], right.split('/')[1]) : `<span class="number-plain">${right}</span>`;
+            return `${leftHtml} ÷ ${rightHtml}`;
+        } else {
+            // 单纯的结果
+            if (expr.includes('/')) {
+                let [num, den] = expr.split('/');
+                return formatFraction(num, den);
+            } else {
+                return `<span class="number-plain">${expr}</span>`;
+            }
+        }
+    }
+
+    // ---------- 游戏数据：算式和结果（最简分数）----------
+    const pairsData = [
+        { expression: "2/3 ÷ 2", result: "1/3" },
+        { expression: "3/4 ÷ 3", result: "1/4" },
+        { expression: "4/5 ÷ 2", result: "2/5" },
+        { expression: "5/6 ÷ 5", result: "1/6" },
+        { expression: "7/8 ÷ 7", result: "1/8" },
+        { expression: "2/5 ÷ 4", result: "1/10" },
+        { expression: "3/7 ÷ 3", result: "1/7" },
+        { expression: "4/9 ÷ 2", result: "2/9" },
+        { expression: "5/8 ÷ 5", result: "1/8" },
+        { expression: "6/7 ÷ 2", result: "3/7" }
+    ];
+
+    // 随机选取 4 对作为当前游戏题目（确保结果不重复）
+    function getRandomPairs() {
+        const shuffled = [...pairsData];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        let selected = [];
+        let usedResults = new Set();
+        for (let i = 0; i < shuffled.length && selected.length < 4; i++) {
+            if (!usedResults.has(shuffled[i].result)) {
+                usedResults.add(shuffled[i].result);
+                selected.push(shuffled[i]);
+            }
+        }
+        return selected;
+    }
+
+    let currentPairs = [];
+    let leftItems = [];      // 左侧可拖拽卡片 { element, expression, result, id }
+    let rightSlots = [];     // 右侧槽位 { element, expectedResult, matched, id }
+    let matchedCount = 0;
+    let totalPairs = 0;
+
+    // DOM 元素
+    const dragList = document.getElementById('dragList');
+    const dropList = document.getElementById('dropList');
+    const matchedSpan = document.getElementById('matchedCount');
+    const totalSpan = document.getElementById('totalCount');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // 拖拽系统变量
+    let dragActive = false;
+    let dragSourceElement = null;
+    let dragSourceExpression = null;
+    let dragSourceResult = null;
+    let dragSourceId = null;
+    let dragClone = null;
+    let onMoveHandler = null;
+    let onUpHandler = null;
+
+    // 更新得分显示
+    function updateScoreUI() {
+        matchedSpan.innerText = matchedCount;
+        totalSpan.innerText = totalPairs;
+        if (matchedCount === totalPairs && totalPairs > 0) {
+            let winDiv = document.querySelector('.win-message-game');
+            if (!winDiv) {
+                winDiv = document.createElement('div');
+                winDiv.className = 'win-message win-message-game';
+                winDiv.innerText = '🎉 太棒啦！所有算式都配对正确！ 🎉';
+                document.querySelector('.game-panel').appendChild(winDiv);
+                setTimeout(() => {
+                    if (winDiv && winDiv.parentNode) winDiv.remove();
+                }, 3500);
+            }
+        } else {
+            let winDiv = document.querySelector('.win-message-game');
+            if (winDiv) winDiv.remove();
+        }
+    }
+
+    function showTip(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 1300);
+    }
+
+    // 配对成功
+    function pairSuccess(slotItem, leftElement, expression, result) {
+        if (slotItem.matched) return false;
+        if (leftElement && leftElement.parentNode) {
+            leftElement.remove();
+        }
+        const leftIndex = leftItems.findIndex(item => item.element === leftElement);
+        if (leftIndex !== -1) {
+            leftItems.splice(leftIndex, 1);
+        }
+        slotItem.matched = true;
+        const slotDiv = slotItem.element;
+        slotDiv.classList.add('filled');
+        const dropArea = slotDiv.querySelector('.drop-area');
+        if (dropArea) dropArea.innerHTML = '✅ 已配对';
+        matchedCount++;
+        updateScoreUI();
+        return true;
+    }
+
+    // 尝试匹配
+    function tryMatchWithSlot(slotItem, expression, result, leftElement) {
+        if (slotItem.matched) {
+            showTip(`这个结果框已经配对过了！不能重复配对哟`);
+            return false;
+        }
+        if (result === slotItem.expectedResult) {
+            pairSuccess(slotItem, leftElement, expression, result);
+            showTip(`✅ 正确！ ${expression} = ${result}`, false);
+            return true;
+        } else {
+            showTip(`❌ 不对哦！ ${expression} 不等于 ${slotItem.expectedResult}，再算一遍吧～`);
+            return false;
+        }
+    }
+
+    // ---------- 拖拽实现 ----------
+    function onDragStart(e, dragElement, expression, result, id) {
+        if (dragActive) return;
+        e.preventDefault();
+        dragActive = true;
+        dragSourceElement = dragElement;
+        dragSourceExpression = expression;
+        dragSourceResult = result;
+        dragSourceId = id;
+
+        dragSourceElement.classList.add('dragging-origin');
+
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        dragClone = document.createElement('div');
+        dragClone.className = 'dragging-clone';
+        dragClone.innerHTML = formatMathExpression(expression);
+        dragClone.style.left = clientX - 60 + 'px';
+        dragClone.style.top = clientY - 30 + 'px';
+        document.body.appendChild(dragClone);
+
+        onMoveHandler = onGlobalMove;
+        onUpHandler = onGlobalUp;
+        window.addEventListener('mousemove', onMoveHandler);
+        window.addEventListener('mouseup', onUpHandler);
+        window.addEventListener('touchmove', onMoveHandler, { passive: false });
+        window.addEventListener('touchend', onUpHandler);
+        window.addEventListener('touchcancel', onUpHandler);
+    }
+
+    function onGlobalMove(e) {
+        if (!dragActive || !dragClone) return;
+        e.preventDefault();
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        dragClone.style.left = clientX - 60 + 'px';
+        dragClone.style.top = clientY - 30 + 'px';
+    }
+
+    function onGlobalUp(e) {
+        if (!dragActive) return;
+
+        let endX, endY;
+        if (e.changedTouches) {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+        } else {
+            endX = e.clientX;
+            endY = e.clientY;
+        }
+
+        if (dragClone) dragClone.style.display = 'none';
+        const elementsUnderCursor = document.elementsFromPoint(endX, endY);
+        if (dragClone) dragClone.style.display = '';
+
+        let targetSlot = null;
+        let targetSlotItem = null;
+        for (let el of elementsUnderCursor) {
+            if (el.classList && el.classList.contains('target-slot')) {
+                targetSlot = el;
+                targetSlotItem = rightSlots.find(item => item.element === targetSlot);
+                break;
+            }
+        }
+
+        if (targetSlotItem && dragSourceElement) {
+            tryMatchWithSlot(targetSlotItem, dragSourceExpression, dragSourceResult, dragSourceElement);
+        } else {
+            if (dragSourceElement) showTip(`✨ 要把算式卡片拖到右侧的结果框内哦！`);
+        }
+
+        if (dragClone) dragClone.remove();
+        dragClone = null;
+        if (dragSourceElement) dragSourceElement.classList.remove('dragging-origin');
+
+        window.removeEventListener('mousemove', onMoveHandler);
+        window.removeEventListener('mouseup', onUpHandler);
+        window.removeEventListener('touchmove', onMoveHandler);
+        window.removeEventListener('touchend', onUpHandler);
+        window.removeEventListener('touchcancel', onUpHandler);
+
+        dragActive = false;
+        dragSourceElement = null;
+        dragSourceExpression = null;
+        dragSourceResult = null;
+        dragSourceId = null;
+    }
+
+    function attachDragToCard(cardElement, expression, result, id) {
+        cardElement.removeEventListener('mousedown', onMouseDown);
+        cardElement.removeEventListener('touchstart', onTouchStart);
+        cardElement.addEventListener('mousedown', onMouseDown);
+        cardElement.addEventListener('touchstart', onTouchStart, { passive: false });
+
+        function onMouseDown(e) {
+            e.preventDefault();
+            onDragStart(e, cardElement, expression, result, id);
+        }
+        function onTouchStart(e) {
+            e.preventDefault();
+            onDragStart(e, cardElement, expression, result, id);
+        }
+        cardElement._dragMouse = onMouseDown;
+        cardElement._dragTouch = onTouchStart;
+    }
+
+    // 构建游戏界面
+    function buildGame(pairs) {
+        dragList.innerHTML = '';
+        dropList.innerHTML = '';
+        leftItems = [];
+        rightSlots = [];
+
+        // 左侧算式卡片（打乱顺序）
+        const leftCards = pairs.map((pair, idx) => ({
+            expression: pair.expression,
+            result: pair.result,
+            id: idx
+        }));
+        for (let i = leftCards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [leftCards[i], leftCards[j]] = [leftCards[j], leftCards[i]];
+        }
+        leftCards.forEach(card => {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'drag-card';
+            cardDiv.innerHTML = formatMathExpression(card.expression);
+            dragList.appendChild(cardDiv);
+            leftItems.push({
+                element: cardDiv,
+                expression: card.expression,
+                result: card.result,
+                id: card.id
+            });
+            attachDragToCard(cardDiv, card.expression, card.result, card.id);
+        });
+
+        // 右侧结果槽位（打乱顺序）
+        const rightTargets = pairs.map((pair, idx) => ({
+            expectedResult: pair.result,
+            id: idx
+        }));
+        for (let i = rightTargets.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [rightTargets[i], rightTargets[j]] = [rightTargets[j], rightTargets[i]];
+        }
+        rightTargets.forEach(target => {
+            const slotDiv = document.createElement('div');
+            slotDiv.className = 'target-slot';
+            slotDiv.innerHTML = `
+                <div class="target-value">🎯 结果: ${formatMathExpression(target.expectedResult)}</div>
+                <div class="drop-area">⬅️ 拖算式卡片到这里</div>
+            `;
+            dropList.appendChild(slotDiv);
+            rightSlots.push({
+                element: slotDiv,
+                expectedResult: target.expectedResult,
+                matched: false,
+                id: target.id
+            });
+        });
+
+        matchedCount = 0;
+        totalPairs = pairs.length;
+        updateScoreUI();
+    }
+
+    function resetGame() {
+        if (dragActive && dragClone) {
+            dragClone.remove();
+            dragClone = null;
+            if (dragSourceElement) dragSourceElement.classList.remove('dragging-origin');
+            dragActive = false;
+        }
+        currentPairs = getRandomPairs();
+        buildGame(currentPairs);
+        const winDiv = document.querySelector('.win-message-game');
+        if (winDiv) winDiv.remove();
+    }
+
+    function init() {
+        resetGame();
+    }
+
+    resetBtn.addEventListener('click', resetGame);
+    init();
+</script>
+</body>
+</html>

@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>认识十以内数字 | 趣味拖拽配对游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* 避免拖动时选中文本，提升体验 */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f9f3e6 0%, #fff4e8 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI Emoji', 'Apple Color Emoji', cursive, sans-serif;
+        }
+
+        /* 主容器左右布局，响应式 */
+        .course-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 245, 0.7);
+            border-radius: 64px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.05), 0 5px 12px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(2px);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .two-columns {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* 左侧知识点区 */
+        .knowledge-area {
+            flex: 1.2;
+            min-width: 260px;
+            background: #fffef7;
+            padding: 24px 20px;
+            border-radius: 48px;
+            margin: 16px 12px 16px 20px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.03);
+            border: 1px solid #ffe2bf;
+        }
+
+        /* 右侧游戏区 */
+        .game-area {
+            flex: 2;
+            min-width: 300px;
+            background: #fffdf5;
+            margin: 16px 20px 16px 12px;
+            padding: 20px 18px;
+            border-radius: 56px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+            border: 1px solid #ffddb0;
+            transition: 0.2s;
+        }
+
+        /* 知识点样式 */
+        .know-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: #ffd89a;
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 60px;
+            margin-bottom: 20px;
+            color: #b45f1b;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+            gap: 16px 12px;
+            margin-top: 10px;
+        }
+
+        .number-card {
+            background: #fff2e0;
+            border-radius: 32px;
+            padding: 12px 6px;
+            text-align: center;
+            transition: transform 0.1s ease;
+            box-shadow: 0 6px 0 #f0cfaa;
+            border: 1px solid #ffe1b9;
+        }
+
+        .digit {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #e67e22;
+            background: white;
+            display: inline-block;
+            width: 52px;
+            height: 52px;
+            line-height: 52px;
+            border-radius: 30px;
+            margin-bottom: 10px;
+            box-shadow: inset 0 1px 3px #0001, 0 2px 3px #ffcf8a;
+        }
+
+        .quantity-icons {
+            font-size: 1.3rem;
+            letter-spacing: 4px;
+            word-break: break-all;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .quantity-icons span {
+            font-size: 1.5rem;
+        }
+
+        /* 右侧游戏区头部 */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 2px dashed #ffcd94;
+            padding-bottom: 12px;
+        }
+
+        .game-title {
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #cc7b2c;
+            background: #fff0df;
+            padding: 0 15px;
+            border-radius: 50px;
+        }
+
+        .score-board {
+            background: #feebcc;
+            border-radius: 40px;
+            padding: 6px 18px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #bc6f25;
+        }
+
+        .new-game-btn {
+            background: #f7bc6c;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 8px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: #4f2c0b;
+            font-family: inherit;
+            transition: 0.1s linear;
+            box-shadow: 0 3px 0 #bd7a3a;
+        }
+
+        .new-game-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #bd7a3a;
+        }
+
+        /* 数量篮子区域 (放置配对目标) */
+        .baskets-area {
+            margin-bottom: 32px;
+        }
+
+        .baskets-title {
+            font-size: 1.3rem;
+            margin-bottom: 14px;
+            color: #a7581c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .baskets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .basket-card {
+            background: #fff5ea;
+            border-radius: 38px;
+            padding: 14px 8px;
+            text-align: center;
+            transition: all 0.1s;
+            border: 2px solid #ffdfb3;
+            box-shadow: 0 6px 0 #f0cfaa;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .basket-card.matched {
+            background: #d9f0cf;
+            border-color: #8bc34a;
+            opacity: 0.85;
+            box-shadow: 0 2px 8px rgba(100, 150, 50, 0.2);
+            filter: grayscale(0.05);
+        }
+
+        .basket-card.matched::after {
+            content: "✓✓";
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #6fbf4c;
+            color: white;
+            font-weight: bold;
+            border-radius: 40px;
+            padding: 4px 8px;
+            font-size: 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .quantity-preview {
+            font-size: 1.9rem;
+            margin-bottom: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .quantity-preview span {
+            font-size: 1.7rem;
+        }
+
+        .basket-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: #ffe1bd;
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 60px;
+            margin-top: 5px;
+            color: #b95f1a;
+        }
+
+        .basket-card.matched .basket-value {
+            background: #c8e6b5;
+            color: #4f6b2c;
+        }
+
+        /* 数字卡片区 (可拖拽) */
+        .digits-area {
+            margin-top: 20px;
+        }
+
+        .digits-title {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            color: #c46b2b;
+        }
+
+        .digits-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .drag-digit {
+            background: #ffe3c2;
+            width: 85px;
+            padding: 16px 0;
+            text-align: center;
+            font-size: 3rem;
+            font-weight: bold;
+            border-radius: 55px;
+            cursor: grab;
+            transition: 0.08s linear;
+            box-shadow: 0 10px 0 #dba451;
+            color: #cf7a2c;
+            touch-action: none;  /* 提升触摸拖拽流畅度 */
+            user-select: none;
+            will-change: transform;
+        }
+
+        .drag-digit:active {
+            cursor: grabbing;
+        }
+
+        .drag-digit.dragging-origin {
+            opacity: 0.4;
+        }
+
+        /* 拖拽克隆样式 */
+        .dragging-clone {
+            position: fixed;
+            z-index: 9999;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.2));
+            transform: scale(1.05);
+            opacity: 0.85;
+            pointer-events: none;
+            background: #ffdead;
+            width: 85px;
+            text-align: center;
+            font-size: 3rem;
+            font-weight: bold;
+            border-radius: 55px;
+            padding: 16px 0;
+            color: #cf7a2c;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        /* 错误提示浮动 */
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffb347;
+            color: #4d2a0e;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            animation: fadeOut 1s ease forwards;
+            pointer-events: none;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0);}
+            70% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden;}
+        }
+
+        .win-message {
+            text-align: center;
+            background: #fbd598;
+            margin-top: 18px;
+            padding: 14px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #a7490a;
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(0.9); opacity: 0; }
+            80% { transform: scale(1.02);}
+            100% { transform: scale(1);}
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 12px;
+            color: #ca9a6b;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 780px) {
+            body {
+                padding: 12px;
+            }
+            .two-columns {
+                flex-direction: column;
+            }
+            .knowledge-area, .game-area {
+                margin: 10px;
+            }
+            .drag-digit {
+                width: 70px;
+                font-size: 2.4rem;
+                padding: 12px 0;
+            }
+            .baskets-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 12px;
+            }
+            .digit {
+                width: 42px;
+                height: 42px;
+                line-height: 42px;
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="course-container">
+    <div class="two-columns">
+        <!-- 左侧知识点讲解区 -->
+        <div class="knowledge-area">
+            <div class="know-title">📖 数字小课堂 0~10</div>
+            <div class="number-grid" id="knowledgeGrid">
+                <!-- 动态生成0-10的数字与数量演示 -->
+            </div>
+            <div style="margin-top: 20px; font-size: 0.9rem; background: #ffefdb; border-radius: 28px; padding: 12px; text-align: center; color: #b66b2a;">
+                💡 小贴士：每个数字代表不同数量的物品。把右边的数字卡片，拖拽到对应物品数量的篮子里吧！
+            </div>
+        </div>
+
+        <!-- 右侧游戏区：拖拽配对互动 -->
+        <div class="game-area">
+            <div class="game-header">
+                <div class="game-title">🎈 拖拽配对乐 🧸</div>
+                <div class="score-board">配对: <span id="matchedCount">0</span> / <span id="totalCount">0</span></div>
+                <button class="new-game-btn" id="resetGameBtn">✨ 新的一局 ✨</button>
+            </div>
+
+            <!-- 数量篮子区域 -->
+            <div class="baskets-area">
+                <div class="baskets-title">🍎 把数字拖到对应的「数量篮子」 🧺</div>
+                <div class="baskets-grid" id="basketsGrid"></div>
+            </div>
+
+            <!-- 可拖拽的数字卡片区 -->
+            <div class="digits-area">
+                <div class="digits-title">🔢 拖拽下面的数字卡片</div>
+                <div class="digits-container" id="digitsContainer"></div>
+            </div>
+            <div style="font-size: 0.8rem; text-align: center; margin-top: 20px; background: #ffefdb; border-radius: 30px; padding: 6px; color: #bf7a3a;">
+                🖱️ 按住数字卡片，拖到正确的篮子上方松手即可配对！
+            </div>
+        </div>
+    </div>
+    <footer>🐼 边玩边学 · 认识数字0~10</footer>
+</div>
+
+<script>
+    // ---------- 游戏核心 ----------
+    // 当前游戏配置: 从0-10中随机选出6个不同的数字（覆盖十以内）
+    let currentNumbers = [];       // 当前配对用到的数字 (长度6)
+    let matchedStatus = [];        // 篮子配对状态 true/false 索引对应 baskets
+    let basketsData = [];          // 存储每个篮子对象 { number, element, index }
+    let digitCards = [];           // 存储未配对的数字卡片DOM元素和对应数值 { element, value, index }
+    
+    let currentDragInfo = {
+        active: false,
+        sourceElement: null,
+        sourceValue: null,
+        clone: null,
+        startX: 0,
+        startY: 0
+    };
+    
+    let totalPairs = 0;
+    let matchedPairs = 0;
+    
+    // DOM 元素
+    const basketsGrid = document.getElementById('basketsGrid');
+    const digitsContainer = document.getElementById('digitsContainer');
+    const matchedCountSpan = document.getElementById('matchedCount');
+    const totalCountSpan = document.getElementById('totalCount');
+    const resetBtn = document.getElementById('resetGameBtn');
+    
+    // 辅助: 随机取6个不同数字 0~10
+    function getRandomSixNumbers() {
+        const all = [0,1,2,3,4,5,6,7,8,9,10];
+        const shuffled = [...all];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, 6);
+    }
+    
+    // 根据数字生成数量图标 (emoji可爱风格)
+    function renderQuantityIcons(number) {
+        const fruits = ['🍎', '🍊', '🍒', '🍓', '🍉', '🥕', '⭐', '🐧', '🐟', '🐞', '🌸'];
+        const emoji = fruits[number % fruits.length];
+        let iconsHtml = '';
+        for (let i = 0; i < number; i++) {
+            iconsHtml += `<span>${emoji}</span>`;
+        }
+        if (number === 0) iconsHtml = `<span>🚫 没有物品</span>`;
+        return iconsHtml;
+    }
+    
+    // 刷新配对计数显示
+    function updateScoreUI() {
+        matchedCountSpan.innerText = matchedPairs;
+        totalCountSpan.innerText = totalPairs;
+        if (matchedPairs === totalPairs && totalPairs > 0) {
+            // 胜利动画提示
+            const existingWin = document.querySelector('.win-message');
+            if(!existingWin) {
+                const winDiv = document.createElement('div');
+                winDiv.className = 'win-message';
+                winDiv.innerText = '🎉 太厉害了！全部配对成功！ 🎉';
+                document.querySelector('.game-area').appendChild(winDiv);
+                setTimeout(() => {
+                    if(winDiv) winDiv.remove();
+                }, 2500);
+            }
+        }
+    }
+    
+    // 检查是否胜利并移除所有待办
+    function checkAllMatched() {
+        if(matchedPairs === totalPairs && totalPairs > 0) {
+            // 胜利时自动显示已经由 updateScoreUI 完成，额外可以轻提示
+        }
+    }
+    
+    // 配对成功逻辑: 根据篮子index 和 数字value, 移除对应的数字卡片，标记篮子配对
+    function pairSuccess(basketIndex, digitValue, digitElement) {
+        if (matchedStatus[basketIndex]) return false; // 已经配对过
+        const basket = basketsData[basketIndex];
+        if (basket.number !== digitValue) return false;
+        
+        // 标记篮子为已配对
+        matchedStatus[basketIndex] = true;
+        const basketDiv = basket.element;
+        basketDiv.classList.add('matched');
+        
+        // 移除数字卡片 (从界面和数据中删除)
+        if (digitElement && digitElement.parentNode) {
+            digitElement.remove();
+        }
+        // 从digitCards数组中移除该卡片
+        const cardIndex = digitCards.findIndex(card => card.element === digitElement);
+        if (cardIndex !== -1) {
+            digitCards.splice(cardIndex, 1);
+        }
+        
+        matchedPairs++;
+        updateScoreUI();
+        checkAllMatched();
+        return true;
+    }
+    
+    // 错误提示
+    function showTipMessage(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            if(toast) toast.remove();
+        }, 1000);
+    }
+    
+    // 重置游戏 (生成新数字组，刷新界面)
+    function resetAndInitGame() {
+        // 清理拖拽残留
+        if (currentDragInfo.clone) {
+            currentDragInfo.clone.remove();
+            currentDragInfo.clone = null;
+        }
+        currentDragInfo.active = false;
+        
+        // 获取新随机数字组 (0-10内选6个不同数字)
+        currentNumbers = getRandomSixNumbers();
+        totalPairs = currentNumbers.length;
+        matchedPairs = 0;
+        matchedStatus = new Array(totalPairs).fill(false);
+        basketsData = [];
+        
+        // 重新绘制篮子区域
+        basketsGrid.innerHTML = '';
+        currentNumbers.forEach((num, idx) => {
+            const basketCard = document.createElement('div');
+            basketCard.className = 'basket-card';
+            if (matchedStatus[idx]) basketCard.classList.add('matched');
+            basketCard.setAttribute('data-basket-index', idx);
+            basketCard.setAttribute('data-value', num);
+            
+            const iconsHtml = renderQuantityIcons(num);
+            basketCard.innerHTML = `
+                <div class="quantity-preview">${iconsHtml}</div>
+                <div class="basket-value">🎯 数量 ${num}</div>
+            `;
+            basketsGrid.appendChild(basketCard);
+            basketsData.push({
+                number: num,
+                element: basketCard,
+                index: idx
+            });
+        });
+        
+        // 生成数字卡片区域 (乱序展示)
+        digitsContainer.innerHTML = '';
+        // 把currentNumbers随机打乱顺序作为可拖拽卡片
+        const shuffledDigits = [...currentNumbers];
+        for (let i = shuffledDigits.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledDigits[i], shuffledDigits[j]] = [shuffledDigits[j], shuffledDigits[i]];
+        }
+        
+        digitCards = [];
+        shuffledDigits.forEach((digitVal) => {
+            const digitDiv = document.createElement('div');
+            digitDiv.className = 'drag-digit';
+            digitDiv.innerText = digitVal;
+            digitDiv.setAttribute('data-digit-value', digitVal);
+            digitDiv.setAttribute('draggable', 'false');  // 不使用原生drag，用模拟拖拽
+            digitsContainer.appendChild(digitDiv);
+            digitCards.push({
+                element: digitDiv,
+                value: digitVal
+            });
+        });
+        
+        // 重新绑定拖拽事件 (每个数字卡片)
+        attachDragEventsToDigits();
+        updateScoreUI();
+        
+        // 额外清除胜利残留消息
+        const winMsgDiv = document.querySelector('.win-message');
+        if(winMsgDiv) winMsgDiv.remove();
+    }
+    
+    // ----- 模拟拖拽系统 (支持触摸 & 鼠标) -----
+    let dragHandlerActive = false;
+    let currentDragElement = null;
+    let currentDragValue = null;
+    let cloneElement = null;
+    let startPointerX = 0, startPointerY = 0;
+    let onMoveHandler = null;
+    let onUpHandler = null;
+    
+    function onDragStart(e, digitEl, digitVal) {
+        if (dragHandlerActive) return;
+        e.preventDefault();
+        // 记录起始
+        dragHandlerActive = true;
+        currentDragElement = digitEl;
+        currentDragValue = digitVal;
+        
+        // 设置原卡片半透明效果
+        currentDragElement.classList.add('dragging-origin');
+        
+        // 创建克隆体
+        cloneElement = document.createElement('div');
+        cloneElement.className = 'dragging-clone';
+        cloneElement.innerText = digitVal;
+        // 获取位置
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        cloneElement.style.left = clientX - 42 + 'px';
+        cloneElement.style.top = clientY - 42 + 'px';
+        document.body.appendChild(cloneElement);
+        
+        // 绑定全局移动和结束事件
+        onMoveHandler = onGlobalMove;
+        onUpHandler = onGlobalUp;
+        window.addEventListener('mousemove', onMoveHandler);
+        window.addEventListener('mouseup', onUpHandler);
+        window.addEventListener('touchmove', onMoveHandler, { passive: false });
+        window.addEventListener('touchend', onUpHandler);
+        window.addEventListener('touchcancel', onUpHandler);
+    }
+    
+    function onGlobalMove(e) {
+        if (!dragHandlerActive || !cloneElement) return;
+        e.preventDefault();
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        cloneElement.style.left = clientX - 42 + 'px';
+        cloneElement.style.top = clientY - 42 + 'px';
+    }
+    
+    function onGlobalUp(e) {
+        if (!dragHandlerActive) return;
+        
+        // 获取释放点坐标
+        let endX, endY;
+        if (e.changedTouches) {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+        } else {
+            endX = e.clientX;
+            endY = e.clientY;
+        }
+        
+        // 隐藏克隆体临时检测下方元素
+        if (cloneElement) cloneElement.style.display = 'none';
+        const elemUnderCursor = document.elementsFromPoint(endX, endY);
+        if (cloneElement) cloneElement.style.display = '';
+        
+        let targetBasket = null;
+        for (let elem of elemUnderCursor) {
+            if (elem.classList && elem.classList.contains('basket-card')) {
+                targetBasket = elem;
+                break;
+            }
+        }
+        
+        let isValid = false;
+        if (targetBasket && currentDragElement) {
+            const basketIndex = targetBasket.getAttribute('data-basket-index');
+            if (basketIndex !== null) {
+                const idx = parseInt(basketIndex);
+                if (!matchedStatus[idx]) {
+                    const basketNum = basketsData[idx].number;
+                    if (basketNum === currentDragValue) {
+                        // 配对成功
+                        pairSuccess(idx, currentDragValue, currentDragElement);
+                        isValid = true;
+                    } else {
+                        showTipMessage(`❌ 不对哦！${currentDragValue} 不等于这个篮子的数量~ 再试试看！`);
+                    }
+                } else {
+                    showTipMessage(`🏆 这个篮子已经配对过啦！不能重复配对哟`);
+                }
+            }
+        } else {
+            if (currentDragElement) showTipMessage(`✨ 要把数字拖到正确的小篮子上方哟`);
+        }
+        
+        // 清理克隆和恢复原卡片样式
+        if (cloneElement) cloneElement.remove();
+        cloneElement = null;
+        if (currentDragElement) {
+            currentDragElement.classList.remove('dragging-origin');
+        }
+        
+        // 解绑事件
+        window.removeEventListener('mousemove', onMoveHandler);
+        window.removeEventListener('mouseup', onUpHandler);
+        window.removeEventListener('touchmove', onMoveHandler);
+        window.removeEventListener('touchend', onUpHandler);
+        window.removeEventListener('touchcancel', onUpHandler);
+        
+        dragHandlerActive = false;
+        currentDragElement = null;
+        currentDragValue = null;
+    }
+    
+    // 为所有数字卡片绑定拖拽启动事件
+    function attachDragEventsToDigits() {
+        const digits = document.querySelectorAll('.drag-digit');
+        digits.forEach(digit => {
+            // 移除旧监听防止重复绑定
+            digit.removeEventListener('mousedown', onDigitMouseDown);
+            digit.removeEventListener('touchstart', onDigitTouchStart);
+            digit.addEventListener('mousedown', onDigitMouseDown);
+            digit.addEventListener('touchstart', onDigitTouchStart, { passive: false });
+        });
+    }
+    
+    function onDigitMouseDown(e) {
+        e.preventDefault();
+        const digitEl = e.currentTarget;
+        const val = parseInt(digitEl.innerText);
+        onDragStart(e, digitEl, val);
+    }
+    
+    function onDigitTouchStart(e) {
+        e.preventDefault();
+        const digitEl = e.currentTarget;
+        const val = parseInt(digitEl.innerText);
+        onDragStart(e, digitEl, val);
+    }
+    
+    // 左侧知识点生成 (0~10)
+    function buildKnowledgeBase() {
+        const knowledgeGrid = document.getElementById('knowledgeGrid');
+        knowledgeGrid.innerHTML = '';
+        for (let i = 0; i <= 10; i++) {
+            const card = document.createElement('div');
+            card.className = 'number-card';
+            const iconSet = renderQuantityIcons(i);
+            card.innerHTML = `
+                <div class="digit">${i}</div>
+                <div class="quantity-icons">${iconSet}</div>
+            `;
+            knowledgeGrid.appendChild(card);
+        }
+    }
+    
+    // 初始化
+    function init() {
+        buildKnowledgeBase();
+        resetAndInitGame();
+        resetBtn.addEventListener('click', () => {
+            if (dragHandlerActive) {
+                // 如果有活跃拖拽强行清理
+                if (cloneElement) cloneElement.remove();
+                dragHandlerActive = false;
+                if(currentDragElement) currentDragElement.classList.remove('dragging-origin');
+            }
+            resetAndInitGame();
+        });
+    }
+    
+    init();
+</script>
+</body>
+</html>

@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>长方体和正方体的展开图 | 趣味拖拽分类游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #fef5e7;
+            font-family: 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI Emoji', cursive, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* 主容器 */
+        .course-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 252, 240, 0.92);
+            border-radius: 64px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.05), 0 5px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .flex-lesson {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* 左侧知识点区域 */
+        .knowledge-panel {
+            flex: 1.2;
+            min-width: 260px;
+            background: #fffef5;
+            margin: 20px 12px 20px 20px;
+            border-radius: 48px;
+            padding: 24px 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid #ffe0b5;
+        }
+
+        /* 右侧游戏区域 */
+        .game-panel {
+            flex: 2;
+            min-width: 300px;
+            background: #fffcf0;
+            margin: 20px 20px 20px 12px;
+            border-radius: 48px;
+            padding: 22px 20px;
+            border: 1px solid #ffdead;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 知识点样式 */
+        .know-title {
+            background: #ffd89a;
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 60px;
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #b45f1b;
+            margin-bottom: 20px;
+        }
+
+        .intro-text {
+            background: #fff1e0;
+            border-radius: 32px;
+            padding: 16px;
+            margin: 18px 0;
+            line-height: 1.4;
+        }
+
+        .cube-grid, .cuboid-grid {
+            margin: 12px 0;
+            background: #fff7e8;
+            border-radius: 24px;
+            padding: 10px;
+        }
+        .cube-grid h4, .cuboid-grid h4 {
+            color: #c56a1a;
+            margin-bottom: 8px;
+        }
+        .example-pics {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .mini-net {
+            background: #ffe1bd;
+            border-radius: 20px;
+            padding: 8px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .mini-canvas {
+            width: 80px;
+            height: 80px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* 右侧游戏头部 */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 2px dashed #ffcd94;
+            padding-bottom: 12px;
+        }
+        .game-title {
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #cc7b2c;
+            background: #fff0df;
+            padding: 0 18px;
+            border-radius: 50px;
+        }
+        .score-board {
+            background: #feebcc;
+            border-radius: 40px;
+            padding: 6px 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #bc6f25;
+        }
+        .reset-btn {
+            background: #f7bc6c;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 8px 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: #4f2c0b;
+            font-family: inherit;
+            transition: 0.1s;
+            box-shadow: 0 3px 0 #bd7a3a;
+        }
+        .reset-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #bd7a3a;
+        }
+
+        /* 篮子区域 (正方体/长方体展开图) */
+        .baskets-area {
+            margin-bottom: 28px;
+        }
+        .subtitle {
+            font-size: 1.3rem;
+            margin: 10px 0 16px 0;
+            color: #b45f1b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .baskets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        .basket {
+            background: #fff9ef;
+            border-radius: 48px;
+            padding: 20px 12px;
+            text-align: center;
+            border: 2px solid #ffe2bf;
+            box-shadow: 0 8px 0 #f2d5a8;
+            transition: 0.1s;
+            cursor: default;
+        }
+        .basket h3 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            color: #c56a1a;
+        }
+        .basket p {
+            background: #ffe1bd;
+            border-radius: 60px;
+            padding: 6px;
+            font-size: 0.85rem;
+            color: #aa6d2c;
+        }
+
+        /* 展开图卡片区域 (可拖拽) */
+        .nets-area {
+            margin-top: 20px;
+        }
+        .cards-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            min-height: 240px;
+        }
+        .drag-net {
+            background: #fff8ef;
+            width: 150px;
+            padding: 12px 6px;
+            text-align: center;
+            border-radius: 40px;
+            cursor: grab;
+            transition: 0.05s linear;
+            box-shadow: 0 8px 0 #e6c99c;
+            color: #cf7a2c;
+            touch-action: none;
+            will-change: transform;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #ffe0b5;
+        }
+        .drag-net canvas {
+            display: block;
+            margin: 0 auto;
+            background: #fffaf2;
+            border-radius: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .drag-net span {
+            font-size: 0.85rem;
+            font-weight: bold;
+            background: #ffe1bd;
+            padding: 4px 12px;
+            border-radius: 60px;
+        }
+        .drag-net:active {
+            cursor: grabbing;
+        }
+        .drag-net.dragging-origin {
+            opacity: 0.3;
+        }
+
+        /* 拖拽克隆样式 */
+        .dragging-clone {
+            position: fixed;
+            z-index: 9999;
+            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2));
+            transform: scale(1.05);
+            opacity: 0.85;
+            pointer-events: none;
+            background: #fff8ef;
+            width: 150px;
+            padding: 12px 6px;
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        .dragging-clone canvas {
+            background: #fffaf2;
+            border-radius: 16px;
+        }
+
+        /* 提示消息 */
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffb347;
+            color: #4d2a0e;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeOut 1s ease forwards;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0);}
+            70% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden;}
+        }
+
+        .win-message {
+            text-align: center;
+            background: #fbd598;
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #a7490a;
+            animation: bounce 0.5s;
+        }
+        @keyframes bounce {
+            0% { transform: scale(0.9); opacity: 0; }
+            80% { transform: scale(1.02);}
+            100% { transform: scale(1);}
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 15px;
+            color: #ca9a6b;
+        }
+
+        @media (max-width: 780px) {
+            body { padding: 12px; }
+            .flex-lesson { flex-direction: column; }
+            .knowledge-panel, .game-panel { margin: 12px; }
+            .drag-net { width: 130px; }
+            .dragging-clone { width: 130px; }
+            .baskets-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+            .basket h3 { font-size: 1.3rem; }
+            .toast-msg { white-space: normal; width: 80%; text-align: center; font-size: 1rem; }
+        }
+
+        .instruction {
+            font-size: 0.85rem;
+            text-align: center;
+            background: #ffefdb;
+            border-radius: 40px;
+            padding: 8px;
+            margin-top: 20px;
+            color: #bd762e;
+        }
+    </style>
+</head>
+<body>
+<div class="course-wrapper">
+    <div class="flex-lesson">
+        <!-- 左侧知识点区：展开图介绍 -->
+        <div class="knowledge-panel">
+            <div class="know-title">📐 展开图魔法</div>
+            <div class="intro-text">
+                <p>✨ 把一个立体图形的表面，沿着棱剪开，铺平得到的图形就是<strong>展开图</strong>。</p>
+                <p>📦 同一个立体图形可能有不同的展开图！</p>
+            </div>
+            <div class="cube-grid">
+                <h4>🧊 正方体展开图（11种）</h4>
+                <p>所有面都是正方形，展开图中6个正方形连在一起。</p>
+                <div class="example-pics">
+                    <div class="mini-net"><canvas class="mini-canvas" id="demoCube1" width="80" height="80"></canvas><span>141型</span></div>
+                    <div class="mini-net"><canvas class="mini-canvas" id="demoCube2" width="80" height="80"></canvas><span>231型</span></div>
+                </div>
+            </div>
+            <div class="cuboid-grid">
+                <h4>📦 长方体展开图</h4>
+                <p>面是长方形，相对的面完全相同，长宽高不同时展开图有长方形网格。</p>
+                <div class="example-pics">
+                    <div class="mini-net"><canvas class="mini-canvas" id="demoCuboid1" width="80" height="80"></canvas><span>长方体例1</span></div>
+                    <div class="mini-net"><canvas class="mini-canvas" id="demoCuboid2" width="80" height="80"></canvas><span>长方体例2</span></div>
+                </div>
+            </div>
+            <div class="intro-text">
+                💡 <strong>游戏挑战</strong>：将下面的展开图拖到正确的篮子里（正方体展开图 or 长方体展开图）！
+            </div>
+        </div>
+
+        <!-- 右侧游戏区：拖拽分类 -->
+        <div class="game-panel">
+            <div class="game-header">
+                <div class="game-title">🎯 展开图分类挑战</div>
+                <div class="score-board">配对成功: <span id="matchedCount">0</span> / <span id="totalCount">0</span></div>
+                <button class="reset-btn" id="resetGameBtn">🔄 新的一局</button>
+            </div>
+
+            <!-- 两个篮子 -->
+            <div class="baskets-area">
+                <div class="subtitle">🧺 把展开图拖到正确的篮子</div>
+                <div class="baskets-grid" id="basketsGrid">
+                    <div class="basket" data-type="cube">
+                        <h3>🧊 正方体展开图</h3>
+                        <p>所有格子都是正方形</p>
+                    </div>
+                    <div class="basket" data-type="cuboid">
+                        <h3>📦 长方体展开图</h3>
+                        <p>包含长方形格子</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 可拖拽展开图卡片区 -->
+            <div class="nets-area">
+                <div class="subtitle">🔍 拖拽下面的展开图卡片</div>
+                <div class="cards-grid" id="netsGrid"></div>
+            </div>
+            <div class="instruction">
+                🖱️ 按住展开图卡片，拖到上方正确的篮子里松手！配对正确卡片会消失并加分。每个展开图只能配对一次。
+            </div>
+        </div>
+    </div>
+    <footer>🐣 观察每个展开图的小格子是正方形还是长方形，再决定属于正方体还是长方体！</footer>
+</div>
+
+<script>
+    // ---------- 展开图数据 ----------
+    // 正方体展开图绘制函数 (ctx, size, type)
+    // 长方体展开图绘制函数 (矩形比例: 长:宽 = 1.6:1 左右，以便明显区分)
+    
+    // 辅助：绘制正方形网格，给定布局数组
+    function drawCubeNet(ctx, w, h, cells, cellSize) {
+        // cells: 二维数组表示偏移和形状，简单起见我们用预设的几个标准图
+        // 实际直接使用具体坐标函数
+    }
+    
+    // 自定义绘制，采用预设三个正方体展开图，三个长方体展开图，用canvas精确绘制
+    // 正方体 141型 (中间4个，上下各1)
+    function drawCube141(ctx, size) {
+        const s = size / 5; // 每个小正方形边长
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = "#f9e2c7";
+        ctx.fillRect(0, 0, size, size);
+        ctx.strokeStyle = "#c9813a";
+        ctx.lineWidth = 1.5;
+        // 布局：第2行第1-4个；第1行第2个；第3行第2个
+        const positions = [[1,1],[0,2],[1,2],[2,2],[3,2],[1,3]];
+        positions.forEach(([row, col]) => {
+            const x = col * s;
+            const y = row * s;
+            ctx.fillStyle = "#fff3e0";
+            ctx.fillRect(x, y, s, s);
+            ctx.strokeRect(x, y, s, s);
+        });
+    }
+    
+    // 正方体 231型
+    function drawCube231(ctx, size) {
+        const s = size / 5;
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = "#f9e2c7";
+        ctx.fillRect(0, 0, size, size);
+        ctx.strokeStyle = "#c9813a";
+        const positions = [[1,1],[1,2],[0,3],[1,3],[2,3],[1,4]];
+        positions.forEach(([row, col]) => {
+            const x = col * s;
+            const y = row * s;
+            ctx.fillStyle = "#fff3e0";
+            ctx.fillRect(x, y, s, s);
+            ctx.strokeRect(x, y, s, s);
+        });
+    }
+    
+    // 正方体 222型
+    function drawCube222(ctx, size) {
+        const s = size / 5;
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = "#f9e2c7";
+        ctx.fillRect(0, 0, size, size);
+        ctx.strokeStyle = "#c9813a";
+        const positions = [[0,1],[0,2],[1,1],[1,2],[2,1],[2,2]];
+        positions.forEach(([row, col]) => {
+            const x = col * s;
+            const y = row * s;
+            ctx.fillStyle = "#fff3e0";
+            ctx.fillRect(x, y, s, s);
+            ctx.strokeRect(x, y, s, s);
+        });
+    }
+    
+    // 长方体展开图绘制（矩形格子，长宽不同比例: 长格宽度s*1.6，高度s）
+    function drawCuboidType1(ctx, size) {
+        const s = size / 6;
+        const wide = s * 1.8;
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = "#f9e2c7";
+        ctx.fillRect(0, 0, size, size);
+        ctx.strokeStyle = "#c9813a";
+        // 模拟长方体展开: 中间四个矩形，上下各一个矩形 (141型但矩形)
+        const positions = [[1,1, wide, s], [0,2, wide, s], [1,2, wide, s], [2,2, wide, s], [3,2, wide, s], [1,3, wide, s]];
+        positions.forEach(([row, col, w, h]) => {
+            const x = col * s;
+            const y = row * s;
+            ctx.fillStyle = "#fff3e0";
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeRect(x, y, w, h);
+        });
+    }
+    
+    function drawCuboidType2(ctx, size) {
+        const s = size / 6;
+        const wide = s * 1.8;
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = "#f9e2c7";
+        ctx.fillRect(0, 0, size, size);
+        ctx.strokeStyle = "#c9813a";
+        // 类似231型的矩形展开
+        const positions = [[1,1, wide, s], [1,2, wide, s], [0,3, wide, s], [1,3, wide, s], [2,3, wide, s], [1,4, wide, s]];
+        positions.forEach(([row, col, w, h]) => {
+            const x = col * s;
+            const y = row * s;
+            ctx.fillStyle = "#fff3e0";
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeRect(x, y, w, h);
+        });
+    }
+    
+    function drawCuboidType3(ctx, size) {
+        const s = size / 6;
+        const wide = s * 1.8;
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = "#f9e2c7";
+        ctx.fillRect(0, 0, size, size);
+        ctx.strokeStyle = "#c9813a";
+        // 类似222排列，但矩形
+        const positions = [[0,1, wide, s], [0,2, wide, s], [1,1, wide, s], [1,2, wide, s], [2,1, wide, s], [2,2, wide, s]];
+        positions.forEach(([row, col, w, h]) => {
+            const x = col * s;
+            const y = row * s;
+            ctx.fillStyle = "#fff3e0";
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeRect(x, y, w, h);
+        });
+    }
+    
+    // 定义数据集：6个展开图（3个正方体，3个长方体）
+    const netsData = [
+        { id: 0, name: "正方体141型", type: "cube", draw: (ctx, size) => drawCube141(ctx, size) },
+        { id: 1, name: "正方体231型", type: "cube", draw: (ctx, size) => drawCube231(ctx, size) },
+        { id: 2, name: "正方体222型", type: "cube", draw: (ctx, size) => drawCube222(ctx, size) },
+        { id: 3, name: "长方体展开1", type: "cuboid", draw: (ctx, size) => drawCuboidType1(ctx, size) },
+        { id: 4, name: "长方体展开2", type: "cuboid", draw: (ctx, size) => drawCuboidType2(ctx, size) },
+        { id: 5, name: "长方体展开3", type: "cuboid", draw: (ctx, size) => drawCuboidType3(ctx, size) }
+    ];
+    
+    let activeNets = [];          // 未配对的卡片 { element, netData }
+    let matchedCount = 0;
+    let totalItems = netsData.length;
+    
+    // DOM 元素
+    const netsGrid = document.getElementById('netsGrid');
+    const matchedSpan = document.getElementById('matchedCount');
+    const totalSpan = document.getElementById('totalCount');
+    const resetBtn = document.getElementById('resetGameBtn');
+    
+    // 拖拽系统变量
+    let dragActive = false;
+    let dragSourceElement = null;
+    let dragSourceNet = null;
+    let dragClone = null;
+    let onMoveHandler = null;
+    let onUpHandler = null;
+    
+    // 更新计分板
+    function updateScoreUI() {
+        matchedSpan.innerText = matchedCount;
+        totalSpan.innerText = totalItems;
+        if (matchedCount === totalItems && totalItems > 0) {
+            let winDiv = document.querySelector('.win-message-game');
+            if (!winDiv) {
+                winDiv = document.createElement('div');
+                winDiv.className = 'win-message win-message-game';
+                winDiv.innerText = '🎉 太厉害了！所有展开图都正确分类！ 🎉';
+                document.querySelector('.game-panel').appendChild(winDiv);
+                setTimeout(() => {
+                    if (winDiv && winDiv.parentNode) winDiv.remove();
+                }, 3500);
+            }
+        } else {
+            let winDiv = document.querySelector('.win-message-game');
+            if (winDiv) winDiv.remove();
+        }
+    }
+    
+    function showTip(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 1300);
+    }
+    
+    // 配对成功：移除卡片
+    function pairSuccess(cardElement) {
+        const cardIndex = activeNets.findIndex(item => item.element === cardElement);
+        if (cardIndex !== -1) {
+            activeNets[cardIndex].element.remove();
+            activeNets.splice(cardIndex, 1);
+            matchedCount++;
+            updateScoreUI();
+            return true;
+        }
+        return false;
+    }
+    
+    // 匹配篮子
+    function tryMatchWithBasket(basketElement, netData, dragCardElement) {
+        if (!basketElement) return false;
+        const targetType = basketElement.getAttribute('data-type');
+        if (!targetType) return false;
+        if (targetType === netData.type) {
+            pairSuccess(dragCardElement);
+            let typeName = (netData.type === 'cube') ? '正方体展开图' : '长方体展开图';
+            showTip(`✅ 正确！ ${netData.name} 属于${typeName}`);
+            return true;
+        } else {
+            let correctType = (netData.type === 'cube') ? '正方体展开图' : '长方体展开图';
+            showTip(`❌ 不对哦！ ${netData.name} 属于${correctType}，再观察一下格子形状～`);
+            return false;
+        }
+    }
+    
+    // ---------- 自定义拖拽 ----------
+    function onDragStart(e, dragElement, netData) {
+        if (dragActive) return;
+        e.preventDefault();
+        dragActive = true;
+        dragSourceElement = dragElement;
+        dragSourceNet = netData;
+        dragSourceElement.classList.add('dragging-origin');
+        
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        
+        // 克隆体，复制canvas内容
+        dragClone = document.createElement('div');
+        dragClone.className = 'dragging-clone';
+        const canvasCopy = document.createElement('canvas');
+        const origCanvas = dragElement.querySelector('canvas');
+        canvasCopy.width = origCanvas.width;
+        canvasCopy.height = origCanvas.height;
+        canvasCopy.style.width = origCanvas.style.width;
+        canvasCopy.style.height = origCanvas.style.height;
+        const ctxCopy = canvasCopy.getContext('2d');
+        ctxCopy.drawImage(origCanvas, 0, 0);
+        const nameSpan = dragElement.querySelector('span').innerText;
+        dragClone.appendChild(canvasCopy);
+        const textSpan = document.createElement('span');
+        textSpan.innerText = nameSpan;
+        textSpan.style.background = "#ffe1bd";
+        textSpan.style.padding = "4px 12px";
+        textSpan.style.borderRadius = "60px";
+        textSpan.style.fontSize = "0.85rem";
+        dragClone.appendChild(textSpan);
+        dragClone.style.left = clientX - 75 + 'px';
+        dragClone.style.top = clientY - 60 + 'px';
+        document.body.appendChild(dragClone);
+        
+        onMoveHandler = onGlobalMove;
+        onUpHandler = onGlobalUp;
+        window.addEventListener('mousemove', onMoveHandler);
+        window.addEventListener('mouseup', onUpHandler);
+        window.addEventListener('touchmove', onMoveHandler, { passive: false });
+        window.addEventListener('touchend', onUpHandler);
+        window.addEventListener('touchcancel', onUpHandler);
+    }
+    
+    function onGlobalMove(e) {
+        if (!dragActive || !dragClone) return;
+        e.preventDefault();
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        dragClone.style.left = clientX - 75 + 'px';
+        dragClone.style.top = clientY - 60 + 'px';
+    }
+    
+    function onGlobalUp(e) {
+        if (!dragActive) return;
+        let endX, endY;
+        if (e.changedTouches) {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+        } else {
+            endX = e.clientX;
+            endY = e.clientY;
+        }
+        if (dragClone) dragClone.style.display = 'none';
+        const elementsUnderCursor = document.elementsFromPoint(endX, endY);
+        if (dragClone) dragClone.style.display = '';
+        let targetBasket = null;
+        for (let el of elementsUnderCursor) {
+            if (el.classList && el.classList.contains('basket')) {
+                targetBasket = el;
+                break;
+            }
+        }
+        if (targetBasket && dragSourceElement && dragSourceNet) {
+            tryMatchWithBasket(targetBasket, dragSourceNet, dragSourceElement);
+        } else {
+            if (dragSourceElement) showTip('✨ 要把展开图拖到上面的篮子里哟！');
+        }
+        if (dragClone) dragClone.remove();
+        dragClone = null;
+        if (dragSourceElement) dragSourceElement.classList.remove('dragging-origin');
+        window.removeEventListener('mousemove', onMoveHandler);
+        window.removeEventListener('mouseup', onUpHandler);
+        window.removeEventListener('touchmove', onMoveHandler);
+        window.removeEventListener('touchend', onUpHandler);
+        window.removeEventListener('touchcancel', onUpHandler);
+        dragActive = false;
+        dragSourceElement = null;
+        dragSourceNet = null;
+    }
+    
+    function attachDragToCard(cardElement, netData) {
+        cardElement.removeEventListener('mousedown', onMouseDown);
+        cardElement.removeEventListener('touchstart', onTouchStart);
+        cardElement.addEventListener('mousedown', onMouseDown);
+        cardElement.addEventListener('touchstart', onTouchStart, { passive: false });
+        function onMouseDown(e) {
+            e.preventDefault();
+            onDragStart(e, cardElement, netData);
+        }
+        function onTouchStart(e) {
+            e.preventDefault();
+            onDragStart(e, cardElement, netData);
+        }
+    }
+    
+    // 构建展开图卡片 (打乱顺序)
+    function buildNetsCards() {
+        netsGrid.innerHTML = '';
+        activeNets = [];
+        const shuffled = [...netsData];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        shuffled.forEach(net => {
+            const card = document.createElement('div');
+            card.className = 'drag-net';
+            const canvas = document.createElement('canvas');
+            canvas.width = 120;
+            canvas.height = 120;
+            canvas.style.width = '100px';
+            canvas.style.height = '100px';
+            const ctx = canvas.getContext('2d');
+            net.draw(ctx, 120);
+            const label = document.createElement('span');
+            label.innerText = net.name;
+            card.appendChild(canvas);
+            card.appendChild(label);
+            netsGrid.appendChild(card);
+            activeNets.push({ element: card, netData: net });
+            attachDragToCard(card, net);
+        });
+        matchedCount = 0;
+        updateScoreUI();
+    }
+    
+    function resetGame() {
+        if (dragActive && dragClone) {
+            dragClone.remove();
+            dragClone = null;
+            if (dragSourceElement) dragSourceElement.classList.remove('dragging-origin');
+            dragActive = false;
+        }
+        buildNetsCards();
+        const winDiv = document.querySelector('.win-message-game');
+        if (winDiv) winDiv.remove();
+    }
+    
+    // 绘制左侧知识点里的迷你展开图示例
+    function drawDemoNets() {
+        const demo1 = document.getElementById('demoCube1').getContext('2d');
+        drawCube141(demo1, 80);
+        const demo2 = document.getElementById('demoCube2').getContext('2d');
+        drawCube231(demo2, 80);
+        const demo3 = document.getElementById('demoCuboid1').getContext('2d');
+        drawCuboidType1(demo3, 80);
+        const demo4 = document.getElementById('demoCuboid2').getContext('2d');
+        drawCuboidType2(demo4, 80);
+    }
+    
+    // 初始化
+    function init() {
+        buildNetsCards();
+        drawDemoNets();
+    }
+    
+    resetBtn.addEventListener('click', resetGame);
+    init();
+</script>
+</body>
+</html>

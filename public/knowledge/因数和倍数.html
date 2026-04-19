@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>因数和倍数 | 趣味拖拽配对游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* 避免拖拽时选中文字 */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #fef7e8;
+            font-family: 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI Emoji', cursive, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* 主容器 */
+        .course-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 252, 240, 0.85);
+            border-radius: 64px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.05), 0 5px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+        }
+
+        .two-columns {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* 左侧知识点区 */
+        .knowledge-area {
+            flex: 1.2;
+            min-width: 260px;
+            background: #fffef5;
+            margin: 20px 12px 20px 20px;
+            border-radius: 48px;
+            padding: 24px 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid #ffe0b5;
+        }
+
+        /* 右侧游戏区 */
+        .game-area {
+            flex: 2;
+            min-width: 300px;
+            background: #fffcf0;
+            margin: 20px 20px 20px 12px;
+            border-radius: 48px;
+            padding: 22px 20px;
+            border: 1px solid #ffdead;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 知识点样式 */
+        .know-title {
+            background: #ffd89a;
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 60px;
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #b45f1b;
+            margin-bottom: 20px;
+        }
+
+        .definition-box {
+            background: #fff1e0;
+            border-radius: 32px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
+        .example {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            color: #b45f1b;
+            background: #fff7e8;
+            padding: 12px;
+            border-radius: 28px;
+        }
+
+        .example strong {
+            color: #e67e22;
+            font-size: 1.3rem;
+        }
+
+        .know-tip {
+            background: #fff0e0;
+            border-radius: 32px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #a7581c;
+        }
+
+        /* 右侧游戏头部 */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 2px dashed #ffcd94;
+            padding-bottom: 12px;
+        }
+
+        .game-title {
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #cc7b2c;
+            background: #fff0df;
+            padding: 0 18px;
+            border-radius: 50px;
+        }
+
+        .score-board {
+            background: #feebcc;
+            border-radius: 40px;
+            padding: 6px 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #bc6f25;
+        }
+
+        .reset-btn {
+            background: #f7bc6c;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 8px 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: #4f2c0b;
+            font-family: inherit;
+            transition: 0.1s;
+            box-shadow: 0 3px 0 #bd7a3a;
+        }
+
+        .reset-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #bd7a3a;
+        }
+
+        /* 配对任务区 (问题卡片) */
+        .missions-area {
+            margin-bottom: 32px;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            margin: 10px 0 16px 0;
+            color: #b45f1b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .missions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .mission-card {
+            background: #fff9ef;
+            border-radius: 42px;
+            padding: 16px 12px;
+            text-align: center;
+            transition: all 0.1s;
+            border: 2px solid #ffe2bf;
+            box-shadow: 0 6px 0 #f2d5a8;
+            position: relative;
+            cursor: pointer; /* 作为拖拽目标区 */
+        }
+
+        .mission-card.matched {
+            background: #d9f0cf;
+            border-color: #8bc34a;
+            opacity: 0.9;
+            box-shadow: 0 2px 8px rgba(100, 150, 50, 0.2);
+        }
+
+        .mission-card.matched::after {
+            content: "✓✓";
+            position: absolute;
+            top: -10px;
+            right: -6px;
+            background: #6fbf4c;
+            color: white;
+            font-weight: bold;
+            border-radius: 40px;
+            padding: 4px 10px;
+            font-size: 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .mission-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #c56a1a;
+            margin-bottom: 8px;
+        }
+
+        .mission-placeholder {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: #ffe1bd;
+            display: inline-block;
+            padding: 4px 20px;
+            border-radius: 60px;
+            color: #aa6d2c;
+            min-width: 80px;
+        }
+
+        .mission-card.matched .mission-placeholder {
+            background: #c8e6b5;
+            color: #4f6b2c;
+            content: attr(data-paired);
+        }
+
+        /* 可拖拽卡片区 (答案池) */
+        .answers-area {
+            margin-top: 20px;
+        }
+
+        .answers-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .drag-card {
+            background: #ffe3c2;
+            width: 100px;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            border-radius: 55px;
+            cursor: grab;
+            transition: 0.05s linear;
+            box-shadow: 0 10px 0 #dba451;
+            color: #cf7a2c;
+            touch-action: none;
+            will-change: transform;
+        }
+
+        .drag-card:active {
+            cursor: grabbing;
+        }
+
+        .drag-card.dragging-origin {
+            opacity: 0.3;
+        }
+
+        /* 拖拽克隆样式 */
+        .dragging-clone {
+            position: fixed;
+            z-index: 9999;
+            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2));
+            transform: scale(1.05);
+            opacity: 0.85;
+            pointer-events: none;
+            background: #ffdead;
+            width: 100px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            border-radius: 55px;
+            padding: 20px 0;
+            color: #cf7a2c;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 提示消息 */
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffb347;
+            color: #4d2a0e;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeOut 1s ease forwards;
+            pointer-events: none;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+
+            70% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+                visibility: hidden;
+            }
+        }
+
+        .win-message {
+            text-align: center;
+            background: #fbd598;
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #a7490a;
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            80% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 15px;
+            color: #ca9a6b;
+        }
+
+        @media (max-width: 780px) {
+            body {
+                padding: 12px;
+            }
+
+            .two-columns {
+                flex-direction: column;
+            }
+
+            .knowledge-area,
+            .game-area {
+                margin: 12px;
+            }
+
+            .drag-card {
+                width: 85px;
+                font-size: 1.8rem;
+                padding: 14px 0;
+            }
+
+            .dragging-clone {
+                width: 85px;
+                font-size: 1.8rem;
+                padding: 14px 0;
+            }
+
+            .missions-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
+
+            .mission-text {
+                font-size: 1.1rem;
+            }
+        }
+
+        .instruction {
+            font-size: 0.85rem;
+            text-align: center;
+            background: #ffefdb;
+            border-radius: 40px;
+            padding: 8px;
+            margin-top: 20px;
+            color: #bd762e;
+        }
+    </style>
+</head>
+<body>
+<div class="course-container">
+    <div class="two-columns">
+        <!-- 左侧知识点讲解区 -->
+        <div class="knowledge-area">
+            <div class="know-title">🔢 因数与倍数</div>
+            <div class="definition-box">
+                <div style="font-size:1.3rem; font-weight:bold;">✨ 什么是因数？</div>
+                <div class="example">📌 如果 <strong>a × b = c</strong> (a,b,c都是整数)，那么 <strong>a</strong> 和 <strong>b</strong> 就是 <strong>c</strong> 的因数。<br>
+                    例如：2 × 3 = 6，所以2和3是6的因数。<br>
+                    6的因数还有：1, 2, 3, 6。
+                </div>
+                <div style="font-size:1.3rem; font-weight:bold; margin-top:20px;">✨ 什么是倍数？</div>
+                <div class="example">📌 如果 <strong>a × b = c</strong>，那么 <strong>c</strong> 就是 <strong>a</strong> 和 <strong>b</strong> 的倍数。<br>
+                    例如：3 × 4 = 12，所以12是3和4的倍数。<br>
+                    12的倍数有：12, 24, 36...
+                </div>
+                <div class="know-tip">
+                    🌟 小秘诀：一个数最小的因数是1，最大的因数是它本身。<br>
+                    🌟 一个数最小的倍数是它本身，没有最大的倍数。
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧互动游戏区：拖拽配对（因数&倍数配对） -->
+        <div class="game-area">
+            <div class="game-header">
+                <div class="game-title">🧸 因数倍数 · 拖拖乐</div>
+                <div class="score-board">配对成功: <span id="matchedCount">0</span> / <span id="totalCount">0</span></div>
+                <button class="reset-btn" id="resetGameBtn">✨ 新的一局 ✨</button>
+            </div>
+
+            <!-- 配对任务区 (问题卡片) -->
+            <div class="missions-area">
+                <div class="subtitle">🎯 把正确的数字拖到对应的卡片上</div>
+                <div class="missions-grid" id="missionsGrid"></div>
+            </div>
+
+            <!-- 可拖拽答案卡片池 -->
+            <div class="answers-area">
+                <div class="subtitle">🃏 拖拽下面的数字卡片</div>
+                <div class="answers-grid" id="answersGrid"></div>
+            </div>
+            <div class="instruction">
+                🖱️ 按住数字卡片，拖到左边问题卡片上松手！配对成功卡片会消失，问题卡片会打勾 ✓
+            </div>
+        </div>
+    </div>
+    <footer>🐣 把正确的因数或倍数拖到对应的题目上，一起挑战吧！</footer>
+</div>
+
+<script>
+    // ---------- 游戏数据集 ----------
+    // 每个任务: 问题描述, 正确答案(数字), 配对状态
+    const missionsData = [
+        { text: "6 的因数 (除了1和本身)?", correctAnswer: 2, displayAnswer: "2" },
+        { text: "8 的因数 (除了1和本身)?", correctAnswer: 4, displayAnswer: "4" },
+        { text: "12 的因数 (除了1和本身)?", correctAnswer: 6, displayAnswer: "6" },
+        { text: "15 的因数 (除了1和本身)?", correctAnswer: 3, displayAnswer: "3" },
+        { text: "6 的倍数 (最小的非本身)?", correctAnswer: 12, displayAnswer: "12" },
+        { text: "8 的倍数 (最小的非本身)?", correctAnswer: 16, displayAnswer: "16" },
+        { text: "12 的倍数 (最小的非本身)?", correctAnswer: 24, displayAnswer: "24" }
+    ];
+
+    // 答案池数据 (所有正确答案卡片, 每个卡片对应一个mission的答案, 初始全部可用)
+    let availableAnswers = [];     // 存储未配对的答案数字 { value, element, missionId }
+    let missionItems = [];         // 存储任务DOM及配对状态
+    let matchedMissions = 0;
+    const totalMissions = missionsData.length;
+
+    // DOM 元素
+    const missionsGrid = document.getElementById('missionsGrid');
+    const answersGrid = document.getElementById('answersGrid');
+    const matchedCountSpan = document.getElementById('matchedCount');
+    const totalCountSpan = document.getElementById('totalCount');
+    const resetBtn = document.getElementById('resetGameBtn');
+
+    // 拖拽系统全局变量 (自定义拖拽支持触摸/鼠标)
+    let dragActive = false;
+    let dragSourceElement = null;
+    let dragSourceValue = null;
+    let dragClone = null;
+    let onMoveHandler = null;
+    let onUpHandler = null;
+
+    // 初始化/重置游戏
+    function initGame() {
+        // 重置配对计数
+        matchedMissions = 0;
+        updateScoreUI();
+
+        // 重新构建任务区
+        missionsGrid.innerHTML = '';
+        missionItems = [];
+        missionsData.forEach((mission, idx) => {
+            const missionCard = document.createElement('div');
+            missionCard.className = 'mission-card';
+            missionCard.setAttribute('data-mission-id', idx);
+            missionCard.setAttribute('data-correct', mission.correctAnswer);
+            missionCard.setAttribute('data-matched', 'false');
+
+            const missionTextDiv = document.createElement('div');
+            missionTextDiv.className = 'mission-text';
+            missionTextDiv.innerText = mission.text;
+
+            const placeholderDiv = document.createElement('div');
+            placeholderDiv.className = 'mission-placeholder';
+            placeholderDiv.innerText = '???';
+
+            missionCard.appendChild(missionTextDiv);
+            missionCard.appendChild(placeholderDiv);
+            missionsGrid.appendChild(missionCard);
+
+            missionItems.push({
+                id: idx,
+                element: missionCard,
+                correctAnswer: mission.correctAnswer,
+                matched: false,
+                placeholder: placeholderDiv
+            });
+        });
+
+        // 构建答案卡片池 (打乱顺序)
+        // 收集所有正确答案，每个mission一个独立卡片，避免冲突，保证每个答案唯一配对
+        const answerValues = missionsData.map(m => m.correctAnswer);
+        // 打乱顺序
+        for (let i = answerValues.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [answerValues[i], answerValues[j]] = [answerValues[j], answerValues[i]];
+        }
+
+        answersGrid.innerHTML = '';
+        availableAnswers = [];
+        answerValues.forEach((val, idx) => {
+            const card = document.createElement('div');
+            card.className = 'drag-card';
+            card.innerText = val;
+            card.setAttribute('data-value', val);
+            answersGrid.appendChild(card);
+            availableAnswers.push({
+                element: card,
+                value: val,
+                id: `ans_${idx}_${Date.now()}`
+            });
+        });
+
+        // 绑定拖拽事件到所有答案卡片
+        attachDragEvents();
+
+        // 清除胜利消息
+        const winDiv = document.querySelector('.win-message-game');
+        if (winDiv) winDiv.remove();
+    }
+
+    // 更新得分UI
+    function updateScoreUI() {
+        matchedCountSpan.innerText = matchedMissions;
+        totalCountSpan.innerText = totalMissions;
+        if (matchedMissions === totalMissions && totalMissions > 0) {
+            let winMsg = document.querySelector('.win-message-game');
+            if (!winMsg) {
+                winMsg = document.createElement('div');
+                winMsg.className = 'win-message win-message-game';
+                winMsg.innerText = '🎉 太厉害了！因数和倍数全部配对成功！ 🎉';
+                document.querySelector('.game-area').appendChild(winMsg);
+                setTimeout(() => {
+                    if (winMsg && winMsg.parentNode) winMsg.remove();
+                }, 3000);
+            }
+        }
+    }
+
+    // 配对成功逻辑: missionId, 答案卡片DOM元素, 答案数值
+    function pairSuccess(missionId, answerElement, answerValue) {
+        const mission = missionItems[missionId];
+        if (mission.matched) {
+            showTip('这个任务已经配对过啦！不能重复配对');
+            return false;
+        }
+        if (mission.correctAnswer !== answerValue) {
+            showTip(`❌ 不对哦！${mission.text} 的正确答案不是 ${answerValue}，再试试看～`);
+            return false;
+        }
+
+        // 配对成功
+        mission.matched = true;
+        mission.element.classList.add('matched');
+        mission.element.setAttribute('data-matched', 'true');
+        mission.placeholder.innerText = answerValue;
+        mission.placeholder.style.background = "#c8e6b5";
+        // 移除答案卡片 (从DOM和数据中删除)
+        if (answerElement && answerElement.parentNode) {
+            answerElement.remove();
+        }
+        // 从 availableAnswers 中删除该卡片
+        const ansIndex = availableAnswers.findIndex(ans => ans.element === answerElement);
+        if (ansIndex !== -1) {
+            availableAnswers.splice(ansIndex, 1);
+        }
+
+        matchedMissions++;
+        updateScoreUI();
+        return true;
+    }
+
+    // 显示短暂提示
+    function showTip(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            if (toast) toast.remove();
+        }, 1000);
+    }
+
+    // ---------- 自定义拖拽 (支持鼠标 & 触摸) ----------
+    function onDragStart(e, dragElement, dragValue) {
+        if (dragActive) return;
+        e.preventDefault();
+        dragActive = true;
+        dragSourceElement = dragElement;
+        dragSourceValue = dragValue;
+
+        dragSourceElement.classList.add('dragging-origin');
+
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        // 克隆体
+        dragClone = document.createElement('div');
+        dragClone.className = 'dragging-clone';
+        dragClone.innerText = dragValue;
+        dragClone.style.left = clientX - 50 + 'px';
+        dragClone.style.top = clientY - 40 + 'px';
+        document.body.appendChild(dragClone);
+
+        onMoveHandler = onGlobalMove;
+        onUpHandler = onGlobalUp;
+        window.addEventListener('mousemove', onMoveHandler);
+        window.addEventListener('mouseup', onUpHandler);
+        window.addEventListener('touchmove', onMoveHandler, { passive: false });
+        window.addEventListener('touchend', onUpHandler);
+        window.addEventListener('touchcancel', onUpHandler);
+    }
+
+    function onGlobalMove(e) {
+        if (!dragActive || !dragClone) return;
+        e.preventDefault();
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        dragClone.style.left = clientX - 50 + 'px';
+        dragClone.style.top = clientY - 40 + 'px';
+    }
+
+    function onGlobalUp(e) {
+        if (!dragActive) return;
+
+        let endX, endY;
+        if (e.changedTouches) {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+        } else {
+            endX = e.clientX;
+            endY = e.clientY;
+        }
+
+        // 隐藏克隆体以检测下方元素
+        if (dragClone) dragClone.style.display = 'none';
+        const elementsUnderCursor = document.elementsFromPoint(endX, endY);
+        if (dragClone) dragClone.style.display = '';
+
+        let targetMissionCard = null;
+        for (let el of elementsUnderCursor) {
+            if (el.classList && el.classList.contains('mission-card')) {
+                targetMissionCard = el;
+                break;
+            }
+        }
+
+        let paired = false;
+        if (targetMissionCard && dragSourceElement) {
+            const missionId = targetMissionCard.getAttribute('data-mission-id');
+            if (missionId !== null) {
+                const id = parseInt(missionId);
+                const mission = missionItems[id];
+                if (mission && !mission.matched) {
+                    const correct = mission.correctAnswer;
+                    if (correct === dragSourceValue) {
+                        const success = pairSuccess(id, dragSourceElement, dragSourceValue);
+                        if (success) paired = true;
+                    } else {
+                        showTip(`🙈 配对错误！${mission.text} 的正确答案不是 ${dragSourceValue}，再观察一下~`);
+                    }
+                } else if (mission && mission.matched) {
+                    showTip('🎯 这个任务已经配对过啦！');
+                } else {
+                    showTip('✨ 请把数字拖到正确的任务卡片上');
+                }
+            } else {
+                showTip('🤔 拖拽到问题卡片上试试看！');
+            }
+        } else {
+            showTip('💡 要把数字卡片拖到左边的问题卡片上哟');
+        }
+
+        // 清理拖拽克隆体
+        if (dragClone) dragClone.remove();
+        dragClone = null;
+        if (dragSourceElement) {
+            dragSourceElement.classList.remove('dragging-origin');
+        }
+
+        // 解绑事件
+        window.removeEventListener('mousemove', onMoveHandler);
+        window.removeEventListener('mouseup', onUpHandler);
+        window.removeEventListener('touchmove', onMoveHandler);
+        window.removeEventListener('touchend', onUpHandler);
+        window.removeEventListener('touchcancel', onUpHandler);
+
+        dragActive = false;
+        dragSourceElement = null;
+        dragSourceValue = null;
+    }
+
+    // 为所有 .drag-card 绑定拖拽启动事件
+    function attachDragEvents() {
+        const dragCards = document.querySelectorAll('.drag-card');
+        dragCards.forEach(card => {
+            card.removeEventListener('mousedown', onMouseDownHandler);
+            card.removeEventListener('touchstart', onTouchStartHandler);
+            card.addEventListener('mousedown', onMouseDownHandler);
+            card.addEventListener('touchstart', onTouchStartHandler, { passive: false });
+        });
+    }
+
+    function onMouseDownHandler(e) {
+        e.preventDefault();
+        const target = e.currentTarget;
+        const value = parseInt(target.getAttribute('data-value'));
+        onDragStart(e, target, value);
+    }
+
+    function onTouchStartHandler(e) {
+        e.preventDefault();
+        const target = e.currentTarget;
+        const value = parseInt(target.getAttribute('data-value'));
+        onDragStart(e, target, value);
+    }
+
+    // 重置游戏全部状态
+    function resetGame() {
+        // 清除任何进行中的拖拽
+        if (dragActive && dragClone) {
+            dragClone.remove();
+            dragClone = null;
+            if (dragSourceElement) dragSourceElement.classList.remove('dragging-origin');
+            dragActive = false;
+        }
+        // 重新初始化界面
+        initGame();
+    }
+
+    // 初始化所有内容
+    initGame();
+    resetBtn.addEventListener('click', resetGame);
+</script>
+</body>
+</html>
